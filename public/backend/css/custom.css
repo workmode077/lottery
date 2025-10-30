@@ -1,0 +1,369 @@
+/* Styling for error messages */
+.error-block {
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #fd625e;
+}
+
+/* 
+Select2 Custom Styles
+Customizes Select2 appearance, including container, dropdown, selections, and dark theme.
+*/
+.select2.select2-container {
+    width: 100% !important;
+}
+
+.select2.select2-container .select2-selection {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    height: 34px;
+    outline: none !important;
+    transition: all 0.14s ease-in-out;
+}
+
+.select2.select2-container .select2-selection--single {
+    background: #fff;
+    color: #333;
+}
+
+.select2.select2-container .select2-selection--multiple {
+    background: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+.select2-container .select2-dropdown {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.select2-container .select2-dropdown .select2-search input {
+    outline: none !important;
+    border: 1px solid #ccc !important;
+    border-bottom: none !important;
+    padding: 4px 6px !important;
+    color: #333;
+}
+
+.select2-container .select2-dropdown .select2-results {
+    padding: 0;
+}
+
+.select2-container .select2-dropdown .select2-results ul {
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.select2-container
+    .select2-dropdown
+    .select2-results
+    ul
+    .select2-results__option {
+    color: #333;
+}
+
+.select2-container
+    .select2-dropdown
+    .select2-results
+    ul
+    .select2-results__option--highlighted[aria-selected] {
+    background-color: #3498db;
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .select2.select2-container .select2-selection--single {
+    background: #2c2c2c;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+[data-bs-theme="dark"] .select2.select2-container .select2-selection--multiple {
+    background: #2c2c2c;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+[data-bs-theme="dark"] .select2-container .select2-dropdown {
+    background: #2c2c2c;
+    border: 1px solid #444;
+}
+
+[data-bs-theme="dark"]
+    .select2-container
+    .select2-dropdown
+    .select2-search
+    input {
+    outline: none !important;
+    border: 1px solid #666 !important;
+    border-bottom: none !important;
+    padding: 4px 6px !important;
+    color: #fff;
+    background: #2c2c2c;
+}
+
+[data-bs-theme="dark"]
+    .select2-container
+    .select2-dropdown
+    .select2-results
+    ul {
+    background: #2c2c2c;
+    border: 1px solid #444;
+}
+
+[data-bs-theme="dark"]
+    .select2-container
+    .select2-dropdown
+    .select2-results
+    ul
+    .select2-results__option {
+    color: #fff;
+}
+
+[data-bs-theme="dark"]
+    .select2-container
+    .select2-dropdown
+    .select2-results
+    ul
+    .select2-results__option--highlighted[aria-selected] {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.select2.select2-container .select2-selection .select2-selection__rendered {
+    color: #333;
+    line-height: 32px;
+    padding-right: 33px;
+}
+
+[data-bs-theme="dark"]
+    .select2.select2-container
+    .select2-selection
+    .select2-selection__rendered {
+    color: #fff;
+}
+
+.select2.select2-container .select2-selection .select2-selection__arrow {
+    background: #f8f8f8;
+    border-left: 1px solid #ccc;
+    border-radius: 0 3px 3px 0;
+    height: 32px;
+    width: 33px;
+}
+
+.select2.select2-container.select2-container--open
+    .select2-selection.select2-selection--single {
+    background: #f8f8f8;
+}
+
+.select2.select2-container.select2-container--open
+    .select2-selection.select2-selection--single
+    .select2-selection__arrow {
+    border-radius: 0 3px 0 0;
+}
+
+.select2.select2-container.select2-container--open
+    .select2-selection.select2-selection--multiple {
+    border: 1px solid #34495e;
+}
+
+.select2.select2-container .select2-selection--multiple {
+    height: auto;
+    min-height: 34px;
+}
+
+.select2.select2-container
+    .select2-selection--multiple
+    .select2-search--inline
+    .select2-search__field {
+    margin-top: 0;
+    height: 32px;
+}
+
+.select2.select2-container
+    .select2-selection--multiple
+    .select2-selection__rendered {
+    display: block;
+    padding: 0 4px;
+    line-height: 29px;
+}
+
+.select2.select2-container
+    .select2-selection--multiple
+    .select2-selection__choice {
+    background-color: #f8f8f8;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin: 4px 4px 0 0;
+    padding: 0 6px 0 22px;
+    height: 24px;
+    line-height: 24px;
+    font-size: 12px;
+    position: relative;
+}
+
+.select2.select2-container
+    .select2-selection--multiple
+    .select2-selection__choice
+    .select2-selection__choice__remove {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    margin: 0;
+    text-align: center;
+    color: #e74c3c;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* 
+   Thumbnail styles for table images:
+   - Small, square images with shadow.
+   - Smooth zoom and shadow increase on hover, with a semi-transparent overlay.
+   - Transitions create a visually smooth hover effect.
+*/
+.table-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.table-thumbnail::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    transition: opacity 0.4s ease;
+    opacity: 0;
+}
+
+.table-thumbnail:hover {
+    transform: scale(2.5);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    z-index: 1000;
+}
+
+.table-thumbnail:hover::before {
+    opacity: 1;
+}
+
+/* Base styles for the action card, positioning it absolutely.
+ It's initially positioned near the top-right corner of its container. */
+.fixed-action-card {
+    position: absolute;
+    top: -51px;
+    right: 12px;
+    z-index: 1030;
+    transition: opacity 0.4s, transform 0.4s, box-shadow 0.4s;
+    background: transparent;
+    box-shadow: none;
+}
+
+.fixed-action-card > .action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.fixed-action-card > .action-buttons button,
+.fixed-action-card > .action-buttons a {
+    display: flex;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    min-width: 50px;
+}
+
+@media (min-width: 576px) {
+    .fixed-action-card > .action-buttons button,
+    .fixed-action-card > .action-buttons a {
+        padding: 2.5px 15px;
+    }
+}
+
+.fixed-action-card > .action-buttons .btn i {
+    font-size: 16px;
+    margin-right: 0.5rem;
+}
+
+.fixed-action-card > .action-buttons > * span {
+    visibility: visible;
+}
+
+.fixed-action-card.scroll-active {
+    position: fixed;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    width: 50px;
+}
+
+.fixed-action-card.scroll-active > .action-buttons button,
+.fixed-action-card.scroll-active > .action-buttons a {
+    padding: 10px 15px;
+}
+
+@media (max-width: 768px) {
+    .fixed-action-card {
+        right: 12px;
+    }
+    .fixed-action-card.scroll-active {
+        right: 5px;
+    }
+    .fixed-action-card > .action-buttons {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .fixed-action-card {
+        position: fixed;
+        top: 50%;
+        right: 5px;
+        transform: translateY(-50%);
+        width: 50px;
+    }
+    .fixed-action-card > .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .fixed-action-card > .action-buttons > * span {
+        opacity: 0;
+    }
+    .fixed-action-card:not(.scroll-active) .action-buttons .btn .bx {
+        display: block !important;
+    }
+}
+
+.fixed-action-card.scroll-active > .action-buttons {
+    flex-direction: column;
+    gap: 5px;
+}
+
+.fixed-action-card.scroll-active > .action-buttons > * span {
+    opacity: 0;
+}
+
+.fixed-action-card:not(.scroll-active) .action-buttons .btn .bx {
+    display: none;
+}
+.fixed-action-card:not(.scroll-active) .action-buttons .btn .bx-loader {
+    display: block;
+}
+
+.choices {
+    margin-bottom: 0;
+}

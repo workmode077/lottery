@@ -1,0 +1,1 @@
+$(document).on("click",".password-toggle",function(){let t=$(this).siblings("input");if(t.length){let e="password"===t.attr("type");t.attr("type",e?"text":"password"),$(this).find("i").toggleClass("mdi-eye-outline mdi-eye-off-outline")}});
