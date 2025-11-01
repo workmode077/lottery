@@ -14,7 +14,8 @@ use Modules\Admin\Http\Controllers\{
     SuperAgentController,
     AgentController,
     SubAgentController,
-    ResultEntryController
+    ResultEntryController,
+    UserGameController
 };
 
 
@@ -60,6 +61,7 @@ Route::prefix(app('backend.prefix'))->group(function () {
         Route::resource('super-agent', SuperAgentController::class)->except(['show'])->names('super-agent');
         Route::resource('agent', AgentController::class)->except(['show'])->names('agent');
         Route::resource('sub-agent', SubAgentController::class)->except(['show'])->names('sub-agent');
+        Route::resource('sub-agent.user-games', UserGameController::class)->except(['show'])->names('sub-agent.user-games');
 
         Route::resource('result-entry', ResultEntryController::class)->except(['show'])->names('result-entry');
        

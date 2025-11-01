@@ -17,7 +17,7 @@ class User extends Authenticatable
 
     protected $modelClass = 'User';
 
-     public function scopeActive($query)
+    public function scopeActive($query)
     {
         return $query->where('status', true);
     }
@@ -53,4 +53,12 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'parent_id')
                     ->where('user_type', 'super_agent');
     }
+
+    public function games()
+    {
+        return $this->belongsToMany(Game::class, 'user_games')
+                    ->withTimestamps()
+                    ->withPivot('status');
+    }
+
 }

@@ -24,6 +24,40 @@ return new class extends Migration
         $table->bigInteger('weekly_credit_limit')->default(35000)->comment('weekly credit limit');
         $table->bigInteger('monthly_credit_limit')->default(150000)->comment('monthly credit limit');
         $table->bigInteger('yearly_credit_limit')->default(1800000)->comment('yearly credit limit');
+
+        //RATE
+       // Super Agent Rate & Commission
+        $table->bigInteger('super_rate')->default(8)->comment('Super agent rate');
+        $table->bigInteger('super_commission_rate')->default(2)->comment('Super agent commission rate');
+
+        // Agent Rate & Commission
+        $table->bigInteger('a_rate')->default(8)->comment('Agent rate');
+        $table->bigInteger('a_commission_rate')->default(2)->comment('Agent commission rate');
+
+        // B Agent Rate & Commission
+        $table->bigInteger('b_rate')->default(8)->comment('B agent rate');
+        $table->bigInteger('b_commission_rate')->default(2)->comment('B agent commission rate');
+
+        // C Agent Rate & Commission
+        $table->bigInteger('c_rate')->default(8)->comment('C agent rate');
+        $table->bigInteger('c_commission_rate')->default(2)->comment('C agent commission rate');
+
+        // AB Rate & Commission
+        $table->bigInteger('ab_rate')->default(8)->comment('AB rate');
+        $table->bigInteger('ab_commission_rate')->default(2)->comment('AB commission rate');
+
+        // BC Rate & Commission
+        $table->bigInteger('bc_rate')->default(8)->comment('BC rate');
+        $table->bigInteger('bc_commission_rate')->default(2)->comment('BC commission rate');
+
+        // AC Rate & Commission
+        $table->bigInteger('ac_rate')->default(8)->comment('AC rate');
+        $table->bigInteger('ac_commission_rate')->default(2)->comment('AC commission rate');
+
+        // Box Rate & Commission
+        $table->bigInteger('box_rate')->default(8)->comment('Box rate');
+        $table->bigInteger('box_commission_rate')->default(2)->comment('Box commission rate');
+
  
 
         $table->boolean('status')->default(true)->comment('active status');

@@ -30,26 +30,27 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Map user_type to numeric value
-        $userTypeMap = [
-            'super_agent' => 1,
-            'agent' => 2,
-            'sub_agent' => 3,
-        ];
+        
+
+       
 
         // Create token
         $token = $user->createToken('auth-token')->accessToken;
+
+        // Load games for sub_agent users
+        if ($user->user_type === 'sub_agent') {
+            $user->load(['games' => function ($query) {
+                $query->where('games.status', true)
+                      ->wherePivot('status', true);
+            }]);
+        }
 
         return response()->json([
             'message' => 'Success',
             'toast_message' => 'Login successful',
             'errorCode' => 0,
-            'data' => [
-                'user_type' => $userTypeMap[$user->user_type] ?? 0,
-                'user_name' => $user->username,
-                'user_id' => $user->id,
-                'token' => $token
-            ]
+            'data' => $user,
+            'token' => $token
         ], 200);
     }
 }

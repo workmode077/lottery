@@ -6,29 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Game extends Model
+class UserGame extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    protected $modelClass = 'Game';
+    protected $modelClass = 'UserGame';
 
     public function scopeActive($query)
     {
         return $query->where('status', true);
     }
-
-    public function resultEntries()
-    {
-        return $this->hasMany(ResultEntry::class, 'game_id');
-    }
-
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'user_games')
-                    ->withTimestamps()
-                    ->withPivot('status');
-    }
-
 }
