@@ -7,7 +7,7 @@ use App\Http\Controllers\AuthController;
 
 
 // Authentication Routes
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login-phone', [AuthController::class, 'login']);
 
 
 
