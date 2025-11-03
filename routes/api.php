@@ -12,7 +12,7 @@ Route::post('/user-login', [AuthController::class, 'login']);
 
 
 //Sub-Agent
-Route::middleware('auth:api')->post('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
+Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
 
 
 
