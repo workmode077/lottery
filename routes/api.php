@@ -2,13 +2,17 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SubAgent\SubAgentDashboardController;
 
 
 
 
 // Authentication Routes
-Route::post('/login-phone', [AuthController::class, 'login']);
+Route::post('/user-login', [AuthController::class, 'login']);
 
+
+//Sub-Agent
+Route::middleware('auth:api')->post('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
 
 
 
