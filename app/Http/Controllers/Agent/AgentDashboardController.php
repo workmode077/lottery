@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\SubAgent;
+namespace App\Http\Controllers\Agent;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class SubAgentDashboardController extends Controller
+class AgentDashboardController extends Controller
 {
-  public function index(Request $request)
+    public function index(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
+        if (!$user || $user->user_type !== 'agent') {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
@@ -19,8 +19,8 @@ class SubAgentDashboardController extends Controller
             ], 401);
         }
 
-        // Load user's games and parent (agent)
-        $user->load(['games', 'agent']);
+        // Load subagents with their games
+        $user->load(['subAgents.games']);
 
         return response()->json([
             "message" => "Success",
@@ -28,9 +28,8 @@ class SubAgentDashboardController extends Controller
             "errorCode" => 0,
             "data" => [
                 "user" => $user,
-                 ]
+                "sub_agents" => $user->subAgents
+            ]
         ], 200);
     }
-
-
 }

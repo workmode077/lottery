@@ -49,11 +49,10 @@ class UserSeeder extends Seeder
 
         $games = Game::where('status',true)->get();
 
-        // 3️⃣ Create 20 SubAgents and assign to Agents
+       // 3️⃣ Create 20 SubAgents and assign to Agents
         for ($i = 1; $i <= 20; $i++) {
             $parent = $agents[($i - 1) % count($agents)];
 
-            // ✅ Save created user into a variable
             $user = User::create([
                 'username' => 'SUB-user' . $i,
                 'user_type' => 'sub_agent',
@@ -61,9 +60,39 @@ class UserSeeder extends Seeder
                 'plain_password' => 'password123',
                 'status' => true,
                 'parent_id' => $parent->id,
+
+                // ✅ LIMIT DEFAULTS (SUB AGENT ONLY)
+                'daily_credit_limit'   => 5000,
+                'weekly_credit_limit'  => 35000,
+                'monthly_credit_limit' => 150000,
+                'yearly_credit_limit'  => 1800000,
+
+                // ✅ RATE & COMMISSION DEFAULTS
+                'super_rate' => 8,
+                'super_commission_rate' => 2,
+
+                'a_rate' => 8,
+                'a_commission_rate' => 2,
+
+                'b_rate' => 8,
+                'b_commission_rate' => 2,
+
+                'c_rate' => 8,
+                'c_commission_rate' => 2,
+
+                'ab_rate' => 8,
+                'ab_commission_rate' => 2,
+
+                'bc_rate' => 8,
+                'bc_commission_rate' => 2,
+
+                'ac_rate' => 8,
+                'ac_commission_rate' => 2,
+
+                'box_rate' => 8,
+                'box_commission_rate' => 2,
             ]);
 
-            // ✅ Attach all games to this user
             foreach ($games as $game) {
                 UserGame::create([
                     'user_id' => $user->id,
@@ -72,6 +101,7 @@ class UserSeeder extends Seeder
                 ]);
             }
         }
+
 
     }
 }

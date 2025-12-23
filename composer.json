@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "cviebrock/eloquent-sluggable": "^11.0",
         "devmarketer/easynav": "^1.0",
         "intervention/image-laravel": "^1.5",

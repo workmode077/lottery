@@ -25,6 +25,7 @@ class User extends Authenticatable
    
     protected $hidden = [
         // 'password',
+        // 'plain_password',
         'remember_token',
     ];
 
@@ -54,11 +55,22 @@ class User extends Authenticatable
                     ->where('user_type', 'super_agent');
     }
 
+    public function subAgents()
+    {
+        return $this->hasMany(User::class, 'parent_id')
+                    ->where('user_type', 'sub_agent');
+    }
+
     public function games()
     {
         return $this->belongsToMany(Game::class, 'user_games')
                     ->withTimestamps()
                     ->withPivot('status');
+    }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class);
     }
 
 }

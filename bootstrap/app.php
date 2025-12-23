@@ -35,6 +35,14 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
+
+        // Configure authentication redirects for API
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                abort(401, 'Unauthenticated');
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // $exceptions->render(function (Exception $exception, Request $request) {
