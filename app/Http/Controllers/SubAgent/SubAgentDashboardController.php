@@ -10,7 +10,7 @@ class SubAgentDashboardController extends Controller
   public function index(Request $request)
     {
         $user = $request->user();
-        if (!$user) {
+       if (!$user || $user->user_type !== 'sub_agent') {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",

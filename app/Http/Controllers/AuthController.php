@@ -34,14 +34,14 @@ class AuthController extends Controller
         $token = $user->createToken('auth-token')->accessToken;
 
         // Map user type return values
-        $userTypeCode = $user->user_type === 'agent' ? 1 : 2;
+        
 
         return response()->json([
             "message" => "Success",
             "toast_message" => "Login successful",
             "errorCode" => 0,
             "data" => [
-                "user_type" => $userTypeCode,
+                "user_type" => $user->user_type,
                 "user_name" => $user->username,
                 "user_id" => $user->id,
                 "token" => $token
