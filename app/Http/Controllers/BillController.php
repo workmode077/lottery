@@ -87,11 +87,11 @@ class BillController extends Controller
     
 
     /* ============ STORE FUNCTION  ============= */
-    public function store(Request $request)
+   public function store(Request $request)
     {
-       $user = $request->user();
+        $authUser = $request->user();
 
-        if (!$user) {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
@@ -102,16 +102,16 @@ class BillController extends Controller
 
         // ✅ Validation
         $request->validate([
+            'user_id' => 'required|exists:users,id',
             'game_id' => 'required|exists:games,id',
             'customer_name' => 'required|string|max:255',
-            'reduced_commission' => 'required|integer|min:0',
             'items' => 'required|array|min:1',
-            'items.*.type' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
+            'items.*.game' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
             'items.*.number' => 'required|integer|min:1',
-            'items.*.price' => 'required|integer|min:1',
+            'items.*.count' => 'required|integer|min:1',
         ]);
 
-        // ✅ Check if game time is valid (at least 5 minutes before game time)
+        // ✅ Game time check
         $gameTimeCheck = $this->isGameTimeValid($request->game_id);
         if (!$gameTimeCheck['valid']) {
             return response()->json([
@@ -125,39 +125,86 @@ class BillController extends Controller
         DB::beginTransaction();
 
         try {
-            $totalCount = count($request->items);
+            $user = User::findOrFail($request->user_id);
+
+            $totalRate = 0;
+            $totalCommission = 0;
+            $totalCount = 0;
             $totalAmount = 0;
 
+            // 🔑 Rate mapping
+            $rateMap = [
+                'SUPER' => ['rate' => 'super_rate', 'commission' => 'super_commission_rate'],
+                'BOX'   => ['rate' => 'box_rate',   'commission' => 'box_commission_rate'],
+                'A'     => ['rate' => 'a_rate',     'commission' => 'a_commission_rate'],
+                'B'     => ['rate' => 'b_rate',     'commission' => 'b_commission_rate'],
+                'C'     => ['rate' => 'c_rate',     'commission' => 'c_commission_rate'],
+                'AB'    => ['rate' => 'ab_rate',    'commission' => 'ab_commission_rate'],
+                'AC'    => ['rate' => 'ac_rate',    'commission' => 'ac_commission_rate'],
+                'BC'    => ['rate' => 'bc_rate',    'commission' => 'bc_commission_rate'],
+            ];
+
             foreach ($request->items as $item) {
-                $totalAmount += $item['price'];
+
+                $game  = $item['game'];
+                $count = $item['count'];
+
+                if (!isset($rateMap[$game])) {
+                    continue;
+                }
+
+                $rateField = $rateMap[$game]['rate'];
+                $commissionField = $rateMap[$game]['commission'];
+
+                $rate = $user->$rateField;
+                $commission = $user->$commissionField;
+
+                $totalCount += $count;
+
+                $itemRateTotal = $rate * $count;
+                $itemCommissionTotal = $commission * $count;
+
+                $totalRate += $itemRateTotal;
+                $totalCommission += $itemCommissionTotal;
+
+                // 🔥 rate + commission together
+                $totalAmount += ($rate + $commission) * $count;
             }
 
-            // Create Bill (INDIVIDUAL FIELDS)
+            
+
+            // ✅ Create Bill
             $bill = Bill::create([
                 'user_id' => $request->user_id,
                 'game_id' => $request->game_id,
                 'customer_name' => $request->customer_name,
                 'total_count' => $totalCount,
-                'reduced_commission' => $request->reduced_commission,
+                'total_rate' => $totalRate,
+                'total_commission' => $totalCommission,
                 'total_amount' => $totalAmount,
             ]);
 
-            // Create Bill Items
-            foreach ($request->items as $item) {
+            // ✅ Create Bill Items
+        foreach ($request->items as $item) {
+
+                $game = $item['game'];
+
+                $rateField       = $rateMap[$game]['rate'];
+                $commissionField = $rateMap[$game]['commission'];
+
+                // price = user rate + user commission
+                $price = $user->$rateField + $user->$commissionField;
+
                 $bill->items()->create([
-                    'type' => $item['type'],
+                    'type'   => $game,
                     'number' => $item['number'],
-                    'price' => $item['price'],
+                    'count'  => $item['count'],
+                    'price'  => $price,
                 ]);
             }
 
-            DB::commit();
 
-            // Generate PDF URLs
-            $pdfUrls = [
-                "download" => url("/api/bill/{$bill->id}/pdf/download"),
-                "view" => url("/api/bill/{$bill->id}/pdf/view")
-            ];
+            DB::commit();
 
             return response()->json([
                 "message" => "Success",
@@ -165,23 +212,27 @@ class BillController extends Controller
                 "errorCode" => 0,
                 "data" => [
                     "bill" => $bill->load('items'),
-                    "pdf_urls" => $pdfUrls
+                    "pdf_urls" => [
+                        "download" => url("/api/bill/{$bill->id}/pdf/download"),
+                        "view" => url("/api/bill/{$bill->id}/pdf/view"),
+                    ]
                 ]
             ], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             Log::error('Bill Store Error: ' . $e->getMessage());
-            Log::error('Stack Trace: ' . $e->getTraceAsString());
 
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Failed to create bill: " . $e->getMessage(),
+                "toast_message" => "Failed to create bill",
                 "errorCode" => 1,
                 "data" => null
             ], 500);
         }
     }
+
 
     /* ============ EDIT PAGE  ============= */
     public function edit(Request $request, $id)
@@ -225,9 +276,9 @@ class BillController extends Controller
     /* ============ UPDATE FUNCTION  ============= */
     public function update(Request $request, $id)
     {
-        $user = $request->user();
+        $authUser = $request->user();
 
-        if (!$user) {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
@@ -260,18 +311,17 @@ class BillController extends Controller
             ], 422);
         }
 
-        // Validation
+        // ✅ Validation
         $request->validate([
             'game_id' => 'required|exists:games,id',
             'customer_name' => 'required|string|max:255',
-            'reduced_commission' => 'required|integer|min:0',
             'items' => 'required|array|min:1',
-            'items.*.type' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
+            'items.*.game' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
             'items.*.number' => 'required|integer|min:1',
-            'items.*.price' => 'required|integer|min:1',
+            'items.*.count' => 'required|integer|min:1',
         ]);
 
-        // ✅ Check if game time is valid (at least 5 minutes before game time)
+        // ✅ Game time check
         $gameTimeCheck = $this->isGameTimeValid($request->game_id);
         if (!$gameTimeCheck['valid']) {
             return response()->json([
@@ -285,30 +335,80 @@ class BillController extends Controller
         DB::beginTransaction();
 
         try {
-            $totalCount = count($request->items);
+            $user = User::findOrFail($bill->user_id);
+
+            $totalRate = 0;
+            $totalCommission = 0;
+            $totalCount = 0;
             $totalAmount = 0;
 
+            // 🔑 Rate mapping
+            $rateMap = [
+                'SUPER' => ['rate' => 'super_rate', 'commission' => 'super_commission_rate'],
+                'BOX'   => ['rate' => 'box_rate',   'commission' => 'box_commission_rate'],
+                'A'     => ['rate' => 'a_rate',     'commission' => 'a_commission_rate'],
+                'B'     => ['rate' => 'b_rate',     'commission' => 'b_commission_rate'],
+                'C'     => ['rate' => 'c_rate',     'commission' => 'c_commission_rate'],
+                'AB'    => ['rate' => 'ab_rate',    'commission' => 'ab_commission_rate'],
+                'AC'    => ['rate' => 'ac_rate',    'commission' => 'ac_commission_rate'],
+                'BC'    => ['rate' => 'bc_rate',    'commission' => 'bc_commission_rate'],
+            ];
+
             foreach ($request->items as $item) {
-                $totalAmount += $item['price'];
+
+                $game  = $item['game'];
+                $count = $item['count'];
+
+                if (!isset($rateMap[$game])) {
+                    continue;
+                }
+
+                $rateField = $rateMap[$game]['rate'];
+                $commissionField = $rateMap[$game]['commission'];
+
+                $rate = $user->$rateField;
+                $commission = $user->$commissionField;
+
+                $totalCount += $count;
+
+                $itemRateTotal = $rate * $count;
+                $itemCommissionTotal = $commission * $count;
+
+                $totalRate += $itemRateTotal;
+                $totalCommission += $itemCommissionTotal;
+
+                // 🔥 rate + commission together
+                $totalAmount += ($rate + $commission) * $count;
             }
 
-            // Update Bill
+            // ✅ Update Bill
             $bill->update([
                 'game_id' => $request->game_id,
                 'customer_name' => $request->customer_name,
                 'total_count' => $totalCount,
-                'reduced_commission' => $request->reduced_commission,
+                'total_rate' => $totalRate,
+                'total_commission' => $totalCommission,
                 'total_amount' => $totalAmount,
             ]);
 
-            // Delete existing items and create new ones
+            // ✅ Delete existing items and create new ones
             $bill->items()->delete();
 
             foreach ($request->items as $item) {
+
+                $game = $item['game'];
+
+                $rateField       = $rateMap[$game]['rate'];
+                $commissionField = $rateMap[$game]['commission'];
+
+                // price = user rate + user commission
+                $price = $user->$rateField + $user->$commissionField;
+
                 $bill->items()->create([
-                    'type' => $item['type'],
+                    'type'   => $game,
                     'number' => $item['number'],
-                    'price' => $item['price'],
+                    'count'  => $item['count'],
+                    'price'  => $price,
                 ]);
             }
 
