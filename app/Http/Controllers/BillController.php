@@ -59,7 +59,7 @@ class BillController extends Controller
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
                 "data" => null
-            ], 401);
+            ], 200);
         }
 
         if ($authUser->user_type === 'agent') {
@@ -74,7 +74,7 @@ class BillController extends Controller
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 1,
                     "data" => null
-                ], 403);
+                ], 200);
             }
 
         } else {
@@ -85,7 +85,7 @@ class BillController extends Controller
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
                     "data" => null
-                ], 401);
+                ], 200);
             }
 
             $user = $authUser;
@@ -133,7 +133,7 @@ class BillController extends Controller
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
                 "data" => null
-            ], 401);
+            ], 200);
         }
 
         // ✅ Validation
@@ -160,7 +160,7 @@ class BillController extends Controller
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 1,
                     "data" => null
-                ], 403);
+                ], 200);
             }
 
         } else {
@@ -171,7 +171,7 @@ class BillController extends Controller
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
                     "data" => null
-                ], 401);
+                ], 200);
             }
 
             $user = $authUser;
@@ -186,7 +186,7 @@ class BillController extends Controller
                 "toast_message" => $gameTimeCheck['message'],
                 "errorCode" => 1,
                 "data" => null
-            ], 422);
+            ], 200);
         }
 
        
@@ -284,7 +284,7 @@ class BillController extends Controller
                         "view" => url("/api/bill/{$bill->id}/pdf/view"),
                     ]
                 ]
-            ], 201);
+            ], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -312,7 +312,7 @@ class BillController extends Controller
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
                 "data" => null
-            ], 401);
+            ], 200);
         }
 
         $bill = Bill::with('items')->find($id);
@@ -323,7 +323,7 @@ class BillController extends Controller
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
                 "data" => null
-            ], 404);
+            ], 200);
         }
 
         return response()->json([
@@ -351,7 +351,7 @@ class BillController extends Controller
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
                 "data" => null
-            ], 401);
+            ], 200);
         }
          if ($authUser->user_type === 'agent') {
 
@@ -365,7 +365,7 @@ class BillController extends Controller
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 1,
                     "data" => null
-                ], 403);
+                ], 200);
             }
 
         } else {
@@ -376,7 +376,7 @@ class BillController extends Controller
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
                     "data" => null
-                ], 401);
+                ], 200);
             }
 
             $user = $authUser;
@@ -391,7 +391,7 @@ class BillController extends Controller
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
                 "data" => null
-            ], 404);
+            ], 200);
         }
 
         // ✅ Check if bill is from a previous date (only today's bills can be updated)
@@ -404,7 +404,7 @@ class BillController extends Controller
                 "toast_message" => "Bills from previous dates cannot be updated, only viewed",
                 "errorCode" => 1,
                 "data" => null
-            ], 422);
+            ], 200);
         }
 
         // ✅ Validation
@@ -425,7 +425,7 @@ class BillController extends Controller
                 "toast_message" => $gameTimeCheck['message'],
                 "errorCode" => 1,
                 "data" => null
-            ], 422);
+            ], 200);
         }
 
         DB::beginTransaction();
@@ -547,7 +547,7 @@ class BillController extends Controller
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
                 "data" => null
-            ], 401);
+            ], 200);
         }
 
         $bill = Bill::where('id', $id)
@@ -561,7 +561,7 @@ class BillController extends Controller
                 "toast_message" => "Bill not found or not created today",
                 "errorCode" => 1,
                 "data" => null
-            ], 404);
+            ], 200);
         }
 
         DB::beginTransaction();
@@ -598,16 +598,7 @@ class BillController extends Controller
     /* ============ GENERATE PDF  ============= */
     public function generatePDF(Request $request, $id)
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Unauthenticated",
-                "errorCode" => 1,
-                "data" => null
-            ], 401);
-        }
+       
 
         $bill = Bill::with(['items', 'game', 'user'])->find($id);
 
@@ -617,7 +608,7 @@ class BillController extends Controller
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
                 "data" => null
-            ], 404);
+            ], 200);
         }
 
         try {
@@ -649,16 +640,7 @@ class BillController extends Controller
     /* ============ VIEW PDF IN BROWSER  ============= */
     public function viewPDF(Request $request, $id)
     {
-        $user = $request->user();
-
-        if (!$user) {
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Unauthenticated",
-                "errorCode" => 1,
-                "data" => null
-            ], 401);
-        }
+        
 
         $bill = Bill::with(['items', 'game', 'user'])->find($id);
 
@@ -668,7 +650,7 @@ class BillController extends Controller
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
                 "data" => null
-            ], 404);
+            ], 200);
         }
 
         try {
