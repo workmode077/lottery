@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\Agent\AgentDashboardController;
+use App\Http\Controllers\Agent\SubAgentListController;
 use App\Http\Controllers\SubAgent\SubAgentDashboardController;
 
 
@@ -17,6 +18,7 @@ Route::post('/user-login', [AuthController::class, 'login']);
 
 // Agent
 Route::middleware('auth:api')->get('/agent-dashboard', [AgentDashboardController::class, 'index']);
+Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentListController::class, 'index']);
 
 
 
