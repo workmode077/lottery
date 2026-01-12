@@ -8,6 +8,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\Agent\AgentDashboardController;
 use App\Http\Controllers\Agent\SubAgentListController;
 use App\Http\Controllers\SubAgent\SubAgentDashboardController;
+use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 
 
 
@@ -24,6 +25,7 @@ Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentListController::c
 
 // Sub-Agent
 Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
+Route::middleware('auth:api')->get('/sub-agent-limit-check', [SubAgentLimitCheckController::class, 'index']);
 
 
 // Bill - PDF routes must come BEFORE resource routes
