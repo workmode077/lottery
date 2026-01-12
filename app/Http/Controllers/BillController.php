@@ -48,8 +48,12 @@ class BillController extends Controller
     /* ============ DATATABEL ============= */
     public function index(Request $request)
     {
-        $user = $request->user();
-        if (!$user) {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $authUser = $request->user();
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
@@ -58,8 +62,41 @@ class BillController extends Controller
             ], 401);
         }
 
-        $bills = $user->bills()
-                    ->with('items')
+        if ($authUser->user_type === 'agent') {
+
+            $user = User::where('id', $request->user_id)
+                        ->where('parent_id', $authUser->id)
+                        ->first();
+
+            if (!$user) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Passed user is not your sub-agent of this agent",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 403);
+            }
+
+        } else {
+
+            if ($authUser->user_type !== 'sub_agent') {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Unauthenticated",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 401);
+            }
+
+            $user = $authUser;
+        }
+
+
+
+
+
+        $bills = Bill::where('user_id', $user->id)
+                    ->with('items', 'game')
                     ->latest()
                     ->get();
 
@@ -67,7 +104,6 @@ class BillController extends Controller
         $bills->transform(function ($bill) {
             $bill->pdf_urls = [
                 "download" => url("/api/bill/{$bill->id}/pdf/download"),
-                "view" => url("/api/bill/{$bill->id}/pdf/view")
             ];
             return $bill;
         });
@@ -111,6 +147,37 @@ class BillController extends Controller
             'items.*.count' => 'required|integer|min:1',
         ]);
 
+
+         if ($authUser->user_type === 'agent') {
+
+            $user = User::where('id', $request->user_id)
+                        ->where('parent_id', $authUser->id)
+                        ->first();
+
+            if (!$user) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Passed user is not your sub-agent of this agent",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 403);
+            }
+
+        } else {
+
+            if ($authUser->user_type !== 'sub_agent') {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Unauthenticated",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 401);
+            }
+
+            $user = $authUser;
+        }
+
+
         // ✅ Game time check
         $gameTimeCheck = $this->isGameTimeValid($request->game_id);
         if (!$gameTimeCheck['valid']) {
@@ -122,11 +189,11 @@ class BillController extends Controller
             ], 422);
         }
 
+       
+
         DB::beginTransaction();
 
         try {
-            $user = User::findOrFail($request->user_id);
-
             $totalRate = 0;
             $totalCommission = 0;
             $totalCount = 0;
@@ -175,7 +242,7 @@ class BillController extends Controller
 
             // ✅ Create Bill
             $bill = Bill::create([
-                'user_id' => $request->user_id,
+                'user_id' => $user->id,
                 'game_id' => $request->game_id,
                 'customer_name' => $request->customer_name,
                 'total_count' => $totalCount,
@@ -286,8 +353,37 @@ class BillController extends Controller
                 "data" => null
             ], 401);
         }
+         if ($authUser->user_type === 'agent') {
 
-        $bill = Bill::find($id);
+            $user = User::where('id', $request->user_id)
+                        ->where('parent_id', $authUser->id)
+                        ->first();
+
+            if (!$user) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Passed user is not your sub-agent of this agent",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 403);
+            }
+
+        } else {
+
+            if ($authUser->user_type !== 'sub_agent') {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Unauthenticated",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 401);
+            }
+
+            $user = $authUser;
+        }
+
+
+        $bill = Bill::where('user_id',$user->id)->where('id',$id)->first();
 
         if (!$bill) {
             return response()->json([
@@ -454,12 +550,15 @@ class BillController extends Controller
             ], 401);
         }
 
-        $bill = Bill::find($id);
+        $bill = Bill::where('id', $id)
+                ->where('user_id', $user->id)
+                ->whereDate('created_at', Carbon::today())
+                ->first();
 
         if (!$bill) {
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Bill not found",
+                "toast_message" => "Bill not found or not created today",
                 "errorCode" => 1,
                 "data" => null
             ], 404);
