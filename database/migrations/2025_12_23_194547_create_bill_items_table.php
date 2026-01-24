@@ -28,6 +28,7 @@ return new class extends Migration
             ])->comment('Item type');
 
             $table->unsignedInteger('number');
+            $table->unsignedInteger('count')->default(1);
             $table->unsignedInteger('price');
 
             $table->softDeletes(); 

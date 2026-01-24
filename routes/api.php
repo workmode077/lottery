@@ -7,6 +7,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\Agent\AgentDashboardController;
 use App\Http\Controllers\Agent\SubAgentListController;
+use App\Http\Controllers\Agent\SubAgentController;
 use App\Http\Controllers\SubAgent\SubAgentDashboardController;
 use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 
@@ -26,6 +27,13 @@ Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentListController::c
 // Sub-Agent
 Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
 Route::middleware('auth:api')->get('/sub-agent-limit-check', [SubAgentLimitCheckController::class, 'index']);
+
+Route::middleware('auth:api')->post('/sub-agent-create', [SubAgentController::class, 'subAgentCreate']);
+Route::middleware('auth:api')->post('/sub-agent-edit', [SubAgentController::class, 'subAgentEdit']);
+Route::middleware('auth:api')->post('/sub-agent-sale-commission', [SubAgentController::class, 'subAgentSaleCommission']);
+Route::middleware('auth:api')->post('/sub-agent-game-count-limit', [SubAgentController::class, 'subAgentGameCountLimit']);
+Route::middleware('auth:api')->post('/sub-agent-number-count-limit', [SubAgentController::class, 'subAgentNumberCountLimit']);
+
 
 
 // Bill - PDF routes must come BEFORE resource routes

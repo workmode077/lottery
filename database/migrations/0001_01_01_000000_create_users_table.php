@@ -19,36 +19,34 @@ return new class extends Migration
         $table->string('password');
         $table->string('plain_password');
 
-        $table->bigInteger('daily_credit_limit')->nullable();
-        $table->bigInteger('weekly_credit_limit')->nullable();
-        $table->bigInteger('monthly_credit_limit')->nullable();
-        $table->bigInteger('yearly_credit_limit')->nullable();
+        $table->bigInteger('daily_credit_limit')->default(10000)->nullable();
+        $table->bigInteger('weekly_credit_limit')->default(50000)->nullable();
+        $table->bigInteger('monthly_credit_limit')->default(100000)->nullable();
+        $table->bigInteger('yearly_credit_limit')->default(1000000)->nullable();
 
-        $table->bigInteger('super_rate')->nullable();
-        $table->bigInteger('super_commission_rate')->nullable();
+        $table->bigInteger('super_rate')->default(8)->nullable();
+        $table->bigInteger('super_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('a_rate')->nullable();
-        $table->bigInteger('a_commission_rate')->nullable();
+        $table->bigInteger('a_rate')->default(8)->nullable();
+        $table->bigInteger('a_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('b_rate')->nullable();
-        $table->bigInteger('b_commission_rate')->nullable();
+        $table->bigInteger('b_rate')->default(8)->nullable();
+        $table->bigInteger('b_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('c_rate')->nullable();
-        $table->bigInteger('c_commission_rate')->nullable();
+        $table->bigInteger('c_rate')->default(8)->nullable();
+        $table->bigInteger('c_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('ab_rate')->nullable();
-        $table->bigInteger('ab_commission_rate')->nullable();
+        $table->bigInteger('ab_rate')->default(8)->nullable();
+        $table->bigInteger('ab_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('bc_rate')->nullable();
-        $table->bigInteger('bc_commission_rate')->nullable();
+        $table->bigInteger('bc_rate')->default(8)->nullable();
+        $table->bigInteger('bc_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('ac_rate')->nullable();
-        $table->bigInteger('ac_commission_rate')->nullable();
+        $table->bigInteger('ac_rate')->default(8)->nullable();
+        $table->bigInteger('ac_commission_rate')->default(2)->nullable();
 
-        $table->bigInteger('box_rate')->nullable();
-        $table->bigInteger('box_commission_rate')->nullable();
-
- 
+        $table->bigInteger('box_rate')->default(8)->nullable();
+        $table->bigInteger('box_commission_rate')->default(2)->nullable();
 
         $table->boolean('status')->default(true)->comment('active status');
         $table->rememberToken();

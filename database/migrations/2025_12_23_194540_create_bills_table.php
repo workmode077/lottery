@@ -19,6 +19,8 @@ return new class extends Migration
 
             $table->string('customer_name');
             $table->integer('total_count');
+            $table->integer('total_rate')->default(0);
+            $table->integer('total_commission')->default(0);
             $table->integer('reduced_commission');
             $table->integer('total_amount');
 
