@@ -20,7 +20,13 @@ Route::post('/user-login', [AuthController::class, 'login']);
 
 // Agent
 Route::middleware('auth:api')->get('/agent-dashboard', [AgentDashboardController::class, 'index']);
-Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentListController::class, 'index']);
+Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentController::class, 'index']);
+Route::middleware('auth:api')->get('/view-sub-agent/{sub_agent_id}', [SubAgentController::class, 'viewSingleSubAgent']);
+Route::middleware('auth:api')->post('/sub-agent-create', [SubAgentController::class, 'subAgentCreate']);
+Route::middleware('auth:api')->post('/sub-agent-edit', [SubAgentController::class, 'subAgentEdit']);
+Route::middleware('auth:api')->post('/sub-agent-sale-commission', [SubAgentController::class, 'subAgentSaleCommission']);
+Route::middleware('auth:api')->post('/sub-agent-game-count-limit', [SubAgentController::class, 'subAgentGameCountLimit']);
+Route::middleware('auth:api')->post('/sub-agent-number-count-limit', [SubAgentController::class, 'subAgentNumberCountLimit']);
 
 
 
@@ -28,11 +34,7 @@ Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentListController::c
 Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
 Route::middleware('auth:api')->get('/sub-agent-limit-check', [SubAgentLimitCheckController::class, 'index']);
 
-Route::middleware('auth:api')->post('/sub-agent-create', [SubAgentController::class, 'subAgentCreate']);
-Route::middleware('auth:api')->post('/sub-agent-edit', [SubAgentController::class, 'subAgentEdit']);
-Route::middleware('auth:api')->post('/sub-agent-sale-commission', [SubAgentController::class, 'subAgentSaleCommission']);
-Route::middleware('auth:api')->post('/sub-agent-game-count-limit', [SubAgentController::class, 'subAgentGameCountLimit']);
-Route::middleware('auth:api')->post('/sub-agent-number-count-limit', [SubAgentController::class, 'subAgentNumberCountLimit']);
+
 
 
 

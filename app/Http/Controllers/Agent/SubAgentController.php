@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Game;
 use App\Models\UserGame;
 use App\Models\GameCountLimit;
 use App\Models\NumberCountLimit;
@@ -14,6 +15,92 @@ use Illuminate\Support\Facades\DB;
 
 class SubAgentController extends Controller
 {
+   public function index(Request $request)
+    {
+        $authUser = $request->user();
+        if (!$authUser || $authUser->user_type !== 'agent') {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthorized. Only agents can access this.",
+                "errorCode" => 1,
+                "data" => null
+            ], 401);
+        }
+
+        // Fetch sub-agents for this agent
+        $subAgents = $authUser->subAgents()
+            ->select('id', 'username', 'daily_credit_limit', 'weekly_credit_limit', 'super_rate', 'super_commission_rate', 'a_rate', 'a_commission_rate', 'b_rate', 'b_commission_rate', 'c_rate', 'c_commission_rate', 'ab_rate', 'ab_commission_rate', 'ac_rate', 'ac_commission_rate', 'bc_rate', 'bc_commission_rate', 'box_rate', 'box_commission_rate')
+            ->get();
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "Sub-agents fetched successfully",
+            "errorCode" => 0,
+            "data" => [
+                "sub_agents" => $subAgents,
+                "total_count" => $subAgents->count()
+            ]
+        ], 200);
+    }
+
+    public function viewSingleSubAgent(Request $request, $sub_agent_id)
+    {
+        $authUser = $request->user();
+
+        // Authorization
+        if (!$authUser || $authUser->user_type !== 'agent') {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthorized. Only agents can access this.",
+                "errorCode" => 1,
+                "data" => null
+            ], 401);
+        }
+
+        // Validate param
+        if (!is_numeric($sub_agent_id)) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Invalid sub_agent_id",
+                "errorCode" => 1,
+                "data" => null
+            ], 422);
+        }
+
+        // Ownership + type check
+        $subAgent = User::where('id', $sub_agent_id)
+            ->where('user_type', 'sub_agent')
+            ->where('parent_id', $authUser->id)  
+            ->first();
+
+        if (!$subAgent) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Sub-agent not found or access denied.",
+                "errorCode" => 1,
+                "data" => null
+            ], 404);
+        }
+
+        // Fetch UserGame with game details, GameCountLimit and NumberCountLimit for this sub-agent
+        $userGames = UserGame::with('game')->where('user_id', $subAgent->id)->get();
+        $gameCountLimits = GameCountLimit::where('user_id', $subAgent->id)->get();
+        $numberCountLimits = NumberCountLimit::where('user_id', $subAgent->id)->get();
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "Sub-agent fetched successfully",
+            "errorCode" => 0,
+            "data" => [
+                "sub_agent" => $subAgent,
+                "user_games" => $userGames,
+                "game_count_limits" => $gameCountLimits,
+                "number_count_limits" => $numberCountLimits
+            ]
+        ], 200);
+    }
+
+
   public function subAgentCreate(Request $request)
     {
         $authUser = $request->user();

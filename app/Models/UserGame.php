@@ -18,4 +18,9 @@ class UserGame extends Model
     {
         return $query->where('status', true);
     }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class);
+    }
 }
