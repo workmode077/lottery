@@ -68,6 +68,11 @@ class User extends Authenticatable
                     ->withPivot('status');
     }
 
+    public function userGames()
+    {
+        return $this->hasMany(UserGame::class, 'user_id');
+    }
+
     public function bills()
     {
         return $this->hasMany(Bill::class);

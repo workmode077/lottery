@@ -18,10 +18,16 @@ use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 // Authentication Routes
 Route::post('/user-login', [AuthController::class, 'login']);
 
+Route::middleware('auth:api')->group(function () {
+    Route::get('/game', [GameController::class, 'index']);
+    Route::get('/game/{id}', [GameController::class, 'show']);
+});
+
+
 // Agent
 Route::middleware('auth:api')->get('/agent-dashboard', [AgentDashboardController::class, 'index']);
 Route::middleware('auth:api')->get('/sub-agent-list', [SubAgentController::class, 'index']);
-Route::middleware('auth:api')->get('/view-sub-agent/{sub_agent_id}', [SubAgentController::class, 'viewSingleSubAgent']);
+Route::middleware('auth:api')->get('/view-sub-agent/{id}', [SubAgentController::class, 'viewSingleSubAgent']);
 Route::middleware('auth:api')->post('/sub-agent-create', [SubAgentController::class, 'subAgentCreate']);
 Route::middleware('auth:api')->post('/sub-agent-edit', [SubAgentController::class, 'subAgentEdit']);
 Route::middleware('auth:api')->post('/sub-agent-sale-commission', [SubAgentController::class, 'subAgentSaleCommission']);
