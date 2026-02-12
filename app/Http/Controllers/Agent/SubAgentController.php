@@ -45,56 +45,121 @@ class SubAgentController extends Controller
     }
 
 
-    public function viewSingleSubAgent(Request $request, $id)
-    {
-        $authUser = $request->user();
+  public function viewSingleSubAgent(Request $request, $id)
+{
+    $authUser = $request->user();
 
-        // Authorization
-         if (!$authUser) {
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Unauthenticated",
-                "errorCode" => 1,
-                "data" => null
-            ], 401);
-        }
+    if (!$authUser) {
+        return response()->json([
+            "message" => "Error",
+            "toast_message" => "Unauthenticated",
+            "errorCode" => 1,
+            "data" => null
+        ], 401);
+    }
 
-         $subAgent = User::where('id', $id)
-            ->where('user_type', 'sub_agent')
-            ->where('status', true)
-            ->first();
+    $subAgent = User::where('id', $id)
+        ->where('user_type', 'sub_agent')
+        ->where('status', true)
+        ->first();
 
-        if (!$subAgent) {
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Sub-agent not found",
-                "errorCode" => 1,
-                "data" => null
-            ], 404);
-        }
+    if (!$subAgent) {
+        return response()->json([
+            "message" => "Error",
+            "toast_message" => "Sub-agent not found",
+            "errorCode" => 1,
+            "data" => null
+        ], 404);
+    }
 
-        $games = Game::where('status', true)->get();
+    /* ✅ GAME TIMING */
+    $games = Game::where('status', true)->get();
 
-        $assignedGameIds = UserGame::where('user_id', $subAgent->id)
-            ->pluck('game_id')
-            ->toArray();
+    $assignedGameIds = UserGame::where('user_id', $subAgent->id)
+        ->pluck('game_id')
+        ->toArray();
 
-        $game_timing = $games->map(function ($game) use ($assignedGameIds) {
+    $subAgent->game_timeing = $games->map(function ($game) use ($assignedGameIds) {
+        return [
+            "game_id" => $game->id,
+            "time"    => $game->time,
+            "active"  => in_array($game->id, $assignedGameIds)
+        ];
+    });
+
+    /* ✅ PRICE COMMISSION */
+    $subAgent->price_commition = [
+        "editable" => true,
+        "lsk_super" => [
+            "first_price" => $subAgent->lsk_super_first_price,
+            "first_price_commition" => $subAgent->lsk_super_first_price_commition,
+            "second_price" => $subAgent->lsk_super_second_price,
+            "second_price_commition" => $subAgent->lsk_super_second_price_commition,
+            "third_price" => $subAgent->lsk_super_third_price,
+            "third_price_commition" => $subAgent->lsk_super_third_price_commition,
+            "fourth_price" => $subAgent->lsk_super_fourth_price,
+            "fourth_price_commition" => $subAgent->lsk_super_fourth_price_commition,
+            "fifth_price" => $subAgent->lsk_super_fifth_price,
+            "fifth_price_commition" => $subAgent->lsk_super_fifth_price_commition,
+            "sisth_price" => $subAgent->lsk_super_sisth_price,
+            "sisth_price_commition" => $subAgent->lsk_super_sisth_price_commition,
+            "lsk_30" => $subAgent->lsk_super_lsk_30,
+            "seventh_price" => $subAgent->lsk_super_seventh_price,
+            "seventh_price_commition" => $subAgent->lsk_super_seventh_price_commition,
+            "lsk_50" => $subAgent->lsk_super_lsk_50,
+        ]
+    ];
+
+    /* ✅ SALES COMMISSION */
+    $subAgent->sales_commition = [
+        "editable" => true,
+        "lsk_super" => $subAgent->super_commission_rate,
+        "abc"       => $subAgent->a_commission_rate,
+        "ab_bc_ac"  => $subAgent->ab_commission_rate,
+        "box"       => $subAgent->box_commission_rate,
+    ];
+
+    /* ✅ GAME COUNT LIMIT */
+    $subAgent->game_count_limit = [
+        "editable" => $subAgent->game_count_editable,
+        "all_dear" => $subAgent->game_count_all_dear,
+        "all_game" => $subAgent->game_count_all_game,
+        "super"    => $subAgent->game_count_super,
+        "box"      => $subAgent->game_count_box,
+        "a"        => $subAgent->game_count_a,
+        "b"        => $subAgent->game_count_b,
+        "c"        => $subAgent->game_count_c,
+        "ab"       => $subAgent->game_count_ab,
+        "ac"       => $subAgent->game_count_ac,
+        "bc"       => $subAgent->game_count_bc,
+    ];
+
+    /* ✅ NUMBER COUNT LIMIT (NEW PART) */
+    $numberLimits = NumberCountLimit::where('user_id', $subAgent->id)
+        ->get()
+        ->map(function ($row) {
             return [
-                "id" => $game->id,
-                "time" => $game->time,
-                "user_assigned" => in_array($game->id, $assignedGameIds)
+                "game_id" => $row->game_id,
+                "type"    => $row->type,
+                "number"  => $row->number,
+                "count"   => $row->count,
             ];
         });
-        $subAgent->game_timing = $game_timing;
 
-        return response()->json([
-            "message" => "Success",
-            "toast_message" => "Sub-agent fetched successfully",
-            "errorCode" => 0,
-            "data" => $subAgent
-        ], 200);
-    }
+    $subAgent->number_count_limit = [
+        "editable" => true,
+        "limits"   => $numberLimits
+    ];
+
+    return response()->json([
+        "message" => "Success",
+        "toast_message" => "Sub-agent fetched successfully",
+        "errorCode" => 0,
+        "data" => $subAgent
+    ], 200);
+}
+
+
 
 
 
