@@ -280,9 +280,15 @@ class SubAgentController extends Controller
                 "message" => "Success",
                 "toast_message" => "Sub-agent updated successfully with games",
                 "errorCode" => 0,
-                "data" => [
-                    "sub_agent" => $subAgent,
-                    "games" => $request->games ?? 'unchanged'
+              "data" => [
+                "sub_agent_id" => $subAgent->id,
+                "username" => $subAgent->username,
+                 "plain_password" => $subAgent->plain_password,
+                "daily_credit_limit" => $subAgent->daily_credit_limit,
+                "weekly_credit_limit" => $subAgent->weekly_credit_limit,
+                "games" => UserGame::where('user_id', $subAgent->id)
+                            ->pluck('game_id')
+                            ->toArray(),
                 ]
             ], 200);
 
@@ -382,14 +388,38 @@ class SubAgentController extends Controller
             DB::commit();
 
             return response()->json([
-                "message" => "Success",
-                "toast_message" => "Sub-agent sale commission updated successfully",
-                "errorCode" => 0,
-                "data" => [
-                    "sub_agent_id" => $subAgent->id,
-                    "rates_updated" => collect($fields)->filter(fn($f) => $request->has($f))->values()
-                ]
-            ], 200);
+            "message" => "Success",
+            "toast_message" => "Sub-agent sale commission updated successfully",
+            "errorCode" => 0,
+            "data" => [
+                "sub_agent_id" => $subAgent->id,
+
+                "super_rate" => $subAgent->super_rate,
+                "super_commission_rate" => $subAgent->super_commission_rate,
+
+                "a_rate" => $subAgent->a_rate,
+                "a_commission_rate" => $subAgent->a_commission_rate,
+
+                "b_rate" => $subAgent->b_rate,
+                "b_commission_rate" => $subAgent->b_commission_rate,
+
+                "c_rate" => $subAgent->c_rate,
+                "c_commission_rate" => $subAgent->c_commission_rate,
+
+                "ab_rate" => $subAgent->ab_rate,
+                "ab_commission_rate" => $subAgent->ab_commission_rate,
+
+                "bc_rate" => $subAgent->bc_rate,
+                "bc_commission_rate" => $subAgent->bc_commission_rate,
+
+                "ac_rate" => $subAgent->ac_rate,
+                "ac_commission_rate" => $subAgent->ac_commission_rate,
+
+                "box_rate" => $subAgent->box_rate,
+                "box_commission_rate" => $subAgent->box_commission_rate,
+            ]
+        ], 200);
+
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -405,32 +435,84 @@ class SubAgentController extends Controller
     }
 
 
-    public function subAgentGameCountLimit(Request $request)
+    public function subAgentPriceCommission(Request $request)
     {
         $authUser = $request->user();
 
-        // Auth check
+        // ✅ Only agent can update
         if (!$authUser || $authUser->user_type !== 'agent') {
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Unauthorized. Only agents can manage sub-agents.",
+                "toast_message" => "Unauthorized. Only agents can edit sub-agents.",
                 "errorCode" => 1,
                 "data" => null
             ], 401);
         }
 
-        // Validation
+        // ✅ Validation
         $request->validate([
             'sub_agent_id' => 'required|exists:users,id',
-            'limits' => 'required|array|min:1',
 
-            'limits.*.game_id' => 'required|integer',
-            'limits.*.type' => 'required|string|in:super,box,a,b,c,ab,ac,bc',
-            'limits.*.number' => 'required|integer|min:0',
-            'limits.*.count' => 'required|integer|min:0',
+            // LSK SUPER
+            'lsk_super_first_price' => 'nullable|numeric|min:0',
+            'lsk_super_first_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_second_price' => 'nullable|numeric|min:0',
+            'lsk_super_second_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_third_price' => 'nullable|numeric|min:0',
+            'lsk_super_third_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_fourth_price' => 'nullable|numeric|min:0',
+            'lsk_super_fourth_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_fifth_price' => 'nullable|numeric|min:0',
+            'lsk_super_fifth_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_sisth_price' => 'nullable|numeric|min:0',
+            'lsk_super_sisth_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_lsk_30' => 'nullable|boolean',
+
+            'lsk_super_seventh_price' => 'nullable|numeric|min:0',
+            'lsk_super_seventh_price_commition' => 'nullable|numeric|min:0',
+
+            'lsk_super_lsk_50' => 'nullable|boolean',
+
+            // BOX THREE DIFFERENT
+            'box_three_diff_first_price' => 'nullable|numeric|min:0',
+            'box_three_diff_first_price_commition' => 'nullable|numeric|min:0',
+
+            'box_three_diff_second_price' => 'nullable|numeric|min:0',
+            'box_three_diff_second_price_commition' => 'nullable|numeric|min:0',
+
+            // BOX TWO SAME
+            'box_two_same_first_price' => 'nullable|numeric|min:0',
+            'box_two_same_first_price_commition' => 'nullable|numeric|min:0',
+
+            'box_two_same_second_price' => 'nullable|numeric|min:0',
+            'box_two_same_second_price_commition' => 'nullable|numeric|min:0',
+
+            // BOX THREE SAME
+            'box_three_same_first_price' => 'nullable|numeric|min:0',
+            'box_three_same_first_price_commition' => 'nullable|numeric|min:0',
+
+            // ABC
+            'abc_first_price' => 'nullable|numeric|min:0',
+            'abc_first_price_commition' => 'nullable|numeric|min:0',
+
+            'abc_second_price' => 'nullable|numeric|min:0',
+            'abc_second_price_commition' => 'nullable|numeric|min:0',
+
+            // AB_AC_BC
+            'ab_ac_bc_first_price' => 'nullable|numeric|min:0',
+            'ab_ac_bc_first_price_commition' => 'nullable|numeric|min:0',
+
+            'ab_ac_bc_second_price' => 'nullable|numeric|min:0',
+            'ab_ac_bc_second_price_commition' => 'nullable|numeric|min:0',
         ]);
 
-        // Ownership check
+        // ✅ Check sub-agent belongs to this agent
         $subAgent = User::where('id', $request->sub_agent_id)
             ->where('user_type', 'sub_agent')
             ->where('parent_id', $authUser->id)
@@ -448,51 +530,134 @@ class SubAgentController extends Controller
         DB::beginTransaction();
 
         try {
-            foreach ($request->limits as $limit) {
 
-                GameCountLimit::updateOrCreate(
-                    [
-                        'user_id' => $subAgent->id,
-                        'game_id' => $limit['game_id'],
-                        'type'    => $limit['type'],
-                        'number'  => $limit['number'],
-                    ],
-                    [
-                        'count' => $limit['count'],
-                    ]
-                );
+            // ✅ All commission fields list
+            $fields = [
+                'lsk_super_first_price','lsk_super_first_price_commition',
+                'lsk_super_second_price','lsk_super_second_price_commition',
+                'lsk_super_third_price','lsk_super_third_price_commition',
+                'lsk_super_fourth_price','lsk_super_fourth_price_commition',
+                'lsk_super_fifth_price','lsk_super_fifth_price_commition',
+                'lsk_super_sisth_price','lsk_super_sisth_price_commition',
+                'lsk_super_lsk_30',
+                'lsk_super_seventh_price','lsk_super_seventh_price_commition',
+                'lsk_super_lsk_50',
+
+                'box_three_diff_first_price','box_three_diff_first_price_commition',
+                'box_three_diff_second_price','box_three_diff_second_price_commition',
+
+                'box_two_same_first_price','box_two_same_first_price_commition',
+                'box_two_same_second_price','box_two_same_second_price_commition',
+
+                'box_three_same_first_price','box_three_same_first_price_commition',
+
+                'abc_first_price','abc_first_price_commition',
+                'abc_second_price','abc_second_price_commition',
+
+                'ab_ac_bc_first_price','ab_ac_bc_first_price_commition',
+                'ab_ac_bc_second_price','ab_ac_bc_second_price_commition',
+            ];
+
+            // ✅ Update only sent fields
+            foreach ($fields as $field) {
+                if ($request->has($field)) {
+                    $subAgent->$field = $request->$field;
+                }
             }
+
+            $subAgent->save();
 
             DB::commit();
 
             return response()->json([
-                "message" => "Success",
-                "toast_message" => "Game count limits saved successfully",
-                "errorCode" => 0,
-                "data" => [
-                    "total_saved" => count($request->limits)
-                ]
-            ], 200);
+            "message" => "Success",
+            "toast_message" => "Sub-agent price commission updated successfully",
+            "errorCode" => 0,
+            "data" => [
+                "sub_agent_id" => $subAgent->id,
+
+                // ✅ LSK SUPER
+                "lsk_super_first_price" => $subAgent->lsk_super_first_price,
+                "lsk_super_first_price_commition" => $subAgent->lsk_super_first_price_commition,
+
+                "lsk_super_second_price" => $subAgent->lsk_super_second_price,
+                "lsk_super_second_price_commition" => $subAgent->lsk_super_second_price_commition,
+
+                "lsk_super_third_price" => $subAgent->lsk_super_third_price,
+                "lsk_super_third_price_commition" => $subAgent->lsk_super_third_price_commition,
+
+                "lsk_super_fourth_price" => $subAgent->lsk_super_fourth_price,
+                "lsk_super_fourth_price_commition" => $subAgent->lsk_super_fourth_price_commition,
+
+                "lsk_super_fifth_price" => $subAgent->lsk_super_fifth_price,
+                "lsk_super_fifth_price_commition" => $subAgent->lsk_super_fifth_price_commition,
+
+                "lsk_super_sisth_price" => $subAgent->lsk_super_sisth_price,
+                "lsk_super_sisth_price_commition" => $subAgent->lsk_super_sisth_price_commition,
+
+                "lsk_super_lsk_30" => $subAgent->lsk_super_lsk_30,
+
+                "lsk_super_seventh_price" => $subAgent->lsk_super_seventh_price,
+                "lsk_super_seventh_price_commition" => $subAgent->lsk_super_seventh_price_commition,
+
+                "lsk_super_lsk_50" => $subAgent->lsk_super_lsk_50,
+
+                // ✅ BOX THREE DIFFERENT
+                "box_three_diff_first_price" => $subAgent->box_three_diff_first_price,
+                "box_three_diff_first_price_commition" => $subAgent->box_three_diff_first_price_commition,
+
+                "box_three_diff_second_price" => $subAgent->box_three_diff_second_price,
+                "box_three_diff_second_price_commition" => $subAgent->box_three_diff_second_price_commition,
+
+                // ✅ BOX TWO SAME
+                "box_two_same_first_price" => $subAgent->box_two_same_first_price,
+                "box_two_same_first_price_commition" => $subAgent->box_two_same_first_price_commition,
+
+                "box_two_same_second_price" => $subAgent->box_two_same_second_price,
+                "box_two_same_second_price_commition" => $subAgent->box_two_same_second_price_commition,
+
+                // ✅ BOX THREE SAME
+                "box_three_same_first_price" => $subAgent->box_three_same_first_price,
+                "box_three_same_first_price_commition" => $subAgent->box_three_same_first_price_commition,
+
+                // ✅ ABC
+                "abc_first_price" => $subAgent->abc_first_price,
+                "abc_first_price_commition" => $subAgent->abc_first_price_commition,
+
+                "abc_second_price" => $subAgent->abc_second_price,
+                "abc_second_price_commition" => $subAgent->abc_second_price_commition,
+
+                // ✅ AB AC BC
+                "ab_ac_bc_first_price" => $subAgent->ab_ac_bc_first_price,
+                "ab_ac_bc_first_price_commition" => $subAgent->ab_ac_bc_first_price_commition,
+
+                "ab_ac_bc_second_price" => $subAgent->ab_ac_bc_second_price,
+                "ab_ac_bc_second_price_commition" => $subAgent->ab_ac_bc_second_price_commition,
+            ]
+        ], 200);
+
 
         } catch (\Exception $e) {
+
             DB::rollBack();
 
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Failed to save game count limits",
+                "toast_message" => "Failed to update price commission",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
                 "data" => null
             ], 500);
         }
     }
-    
 
-    public function subAgentNumberCountLimit(Request $request)
+
+
+    public function subAgentGameCountLimit(Request $request)
     {
         $authUser = $request->user();
 
-        // Auth check
+        // ✅ Only agent can update
         if (!$authUser || $authUser->user_type !== 'agent') {
             return response()->json([
                 "message" => "Error",
@@ -502,18 +667,28 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // Validation
+        // ✅ Validation
         $request->validate([
             'sub_agent_id' => 'required|exists:users,id',
-            'limits' => 'required|array|min:1',
 
-            'limits.*.game_id' => 'required|integer',
-            'limits.*.type' => 'required|string|in:super,box,a,b,c,ab,ac,bc',
-            'limits.*.number' => 'required|integer|min:0',
-            'limits.*.count' => 'required|integer|min:0',
+            'game_count_editable' => 'nullable|boolean',
+
+            'game_count_all_dear' => 'nullable|boolean',
+            'game_count_all_game' => 'nullable|boolean',
+
+            'game_count_super' => 'nullable|numeric|min:0',
+            'game_count_box'   => 'nullable|numeric|min:0',
+
+            'game_count_a' => 'nullable|numeric|min:0',
+            'game_count_b' => 'nullable|numeric|min:0',
+            'game_count_c' => 'nullable|numeric|min:0',
+
+            'game_count_ab' => 'nullable|numeric|min:0',
+            'game_count_ac' => 'nullable|numeric|min:0',
+            'game_count_bc' => 'nullable|numeric|min:0',
         ]);
 
-        // Ownership check
+        // ✅ Check sub-agent belongs to this agent
         $subAgent = User::where('id', $request->sub_agent_id)
             ->where('user_type', 'sub_agent')
             ->where('parent_id', $authUser->id)
@@ -531,9 +706,119 @@ class SubAgentController extends Controller
         DB::beginTransaction();
 
         try {
+
+            // ✅ Fields list
+            $fields = [
+                'game_count_editable',
+                'game_count_all_dear',
+                'game_count_all_game',
+
+                'game_count_super',
+                'game_count_box',
+
+                'game_count_a',
+                'game_count_b',
+                'game_count_c',
+
+                'game_count_ab',
+                'game_count_ac',
+                'game_count_bc',
+            ];
+
+            // ✅ Update only provided fields
+            foreach ($fields as $field) {
+                if ($request->has($field)) {
+                    $subAgent->$field = $request->$field;
+                }
+            }
+
+            $subAgent->save();
+
+            DB::commit();
+
+            // ✅ Return full saved values
+            $responseData = [
+                "sub_agent_id" => $subAgent->id,
+            ];
+
+            foreach ($fields as $field) {
+                $responseData[$field] = $subAgent->$field;
+            }
+
+            return response()->json([
+                "message" => "Success",
+                "toast_message" => "Game count limits updated successfully",
+                "errorCode" => 0,
+                "data" => $responseData
+            ], 200);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Failed to update game count limits",
+                "errorCode" => 1,
+                "error" => $e->getMessage(),
+                "data" => null
+            ], 500);
+        }
+    }
+
+
+    
+
+ public function subAgentNumberCountLimit(Request $request)
+    {
+        $authUser = $request->user();
+
+        // ✅ Auth check
+        if (!$authUser || $authUser->user_type !== 'agent') {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthorized. Only agents can manage sub-agents.",
+                "errorCode" => 1,
+                "data" => null
+            ], 401);
+        }
+
+        // ✅ Validation
+        $request->validate([
+            'sub_agent_id' => 'required|exists:users,id',
+            'limits' => 'required|array|min:1',
+
+            'limits.*.game_id' => 'required|integer',
+            'limits.*.type' => 'required|string|in:super,box,a,b,c,ab,ac,bc',
+            'limits.*.number' => 'required|integer|min:0',
+            'limits.*.count' => 'required|integer|min:0',
+        ]);
+
+        // ✅ Ownership check
+        $subAgent = User::where('id', $request->sub_agent_id)
+            ->where('user_type', 'sub_agent')
+            ->where('parent_id', $authUser->id)
+            ->first();
+
+        if (!$subAgent) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Sub-agent not found or access denied.",
+                "errorCode" => 1,
+                "data" => null
+            ], 404);
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            $savedLimits = [];
+
+            // ✅ Save each limit
             foreach ($request->limits as $limit) {
 
-                NumberCountLimit::updateOrCreate(
+                $record = NumberCountLimit::updateOrCreate(
                     [
                         'user_id' => $subAgent->id,
                         'game_id' => $limit['game_id'],
@@ -544,6 +829,15 @@ class SubAgentController extends Controller
                         'count' => $limit['count'],
                     ]
                 );
+
+                // ✅ Collect updated record for response
+                $savedLimits[] = [
+                    "id"      => $record->id,
+                    "game_id" => $record->game_id,
+                    "type"    => $record->type,
+                    "number"  => $record->number,
+                    "count"   => $record->count,
+                ];
             }
 
             DB::commit();
@@ -553,11 +847,14 @@ class SubAgentController extends Controller
                 "toast_message" => "Number count limits saved successfully",
                 "errorCode" => 0,
                 "data" => [
-                    "total_saved" => count($request->limits)
+                    "sub_agent_id" => $subAgent->id,
+                    "total_saved"  => count($savedLimits),
+                    "limits"       => $savedLimits
                 ]
             ], 200);
 
         } catch (\Exception $e) {
+
             DB::rollBack();
 
             return response()->json([
@@ -569,4 +866,5 @@ class SubAgentController extends Controller
             ], 500);
         }
     }
+
 }

@@ -31,6 +31,7 @@ Route::middleware('auth:api')->get('/view-sub-agent/{id}', [SubAgentController::
 Route::middleware('auth:api')->post('/sub-agent-create', [SubAgentController::class, 'subAgentCreate']);
 Route::middleware('auth:api')->post('/sub-agent-edit', [SubAgentController::class, 'subAgentEdit']);
 Route::middleware('auth:api')->post('/sub-agent-sale-commission', [SubAgentController::class, 'subAgentSaleCommission']);
+Route::middleware('auth:api')->post('/sub-agent-price-commission', [SubAgentController::class, 'subAgentPriceCommission']);
 Route::middleware('auth:api')->post('/sub-agent-game-count-limit', [SubAgentController::class, 'subAgentGameCountLimit']);
 Route::middleware('auth:api')->post('/sub-agent-number-count-limit', [SubAgentController::class, 'subAgentNumberCountLimit']);
 

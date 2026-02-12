@@ -17,12 +17,12 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->comment('User ID who owns the bill');
             $table->unsignedBigInteger('game_id')->comment('Game ID associated with the bill');
 
-            $table->string('customer_name');
-            $table->integer('total_count');
+            $table->string('customer_name')->nullable();
+            $table->integer('total_count')->nullable();
             $table->integer('total_rate')->default(0);
             $table->integer('total_commission')->default(0);
-            $table->integer('reduced_commission');
-            $table->integer('total_amount');
+            $table->integer('reduced_commission')->nullable();
+            $table->integer('total_amount')->nullable();
 
             $table->softDeletes();
             $table->timestamps();
