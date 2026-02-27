@@ -39,9 +39,9 @@ return new class extends Migration
             $table->unsignedSmallInteger($col)
                 ->comment('3-digit number');
         }
-
+         $table->text('link')->comment('link');
         // Status enum
-        $table->enum('status', ['published', 'unpublished'])->default('unpublished');
+        $table->boolean('status')->default(true)->comment('active status');
 
         // Timestamps and soft deletes
         $table->timestamps();

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Game;
+use App\Models\Price;
 use App\Models\UserGame;
 use App\Models\GameCountLimit;
 use App\Models\NumberCountLimit;
@@ -87,36 +88,83 @@ class SubAgentController extends Controller
         ];
     });
 
+    $price = Price::first();
+
     /* ✅ PRICE COMMISSION */
-    $subAgent->price_commition = [
+    $subAgent->price_commission = [
         "editable" => true,
         "lsk_super" => [
-            "first_price" => $subAgent->lsk_super_first_price,
-            "first_price_commition" => $subAgent->lsk_super_first_price_commition,
-            "second_price" => $subAgent->lsk_super_second_price,
-            "second_price_commition" => $subAgent->lsk_super_second_price_commition,
-            "third_price" => $subAgent->lsk_super_third_price,
-            "third_price_commition" => $subAgent->lsk_super_third_price_commition,
-            "fourth_price" => $subAgent->lsk_super_fourth_price,
-            "fourth_price_commition" => $subAgent->lsk_super_fourth_price_commition,
-            "fifth_price" => $subAgent->lsk_super_fifth_price,
-            "fifth_price_commition" => $subAgent->lsk_super_fifth_price_commition,
-            "sisth_price" => $subAgent->lsk_super_sisth_price,
-            "sisth_price_commition" => $subAgent->lsk_super_sisth_price_commition,
-            "lsk_30" => $subAgent->lsk_super_lsk_30,
-            "seventh_price" => $subAgent->lsk_super_seventh_price,
-            "seventh_price_commition" => $subAgent->lsk_super_seventh_price_commition,
-            "lsk_50" => $subAgent->lsk_super_lsk_50,
-        ]
+            "first_price" => $price->lsk_super_first_price,
+            "first_price_commission" => $subAgent->lsk_super_first_price_commission,
+            "second_price" => $price->lsk_super_second_price,
+            "second_price_commission" => $subAgent->lsk_super_second_price_commission,
+            "third_price" => $price->lsk_super_third_price,
+            "third_price_commission" => $subAgent->lsk_super_third_price_commission,
+            "fourth_price" => $price->lsk_super_fourth_price,
+            "fourth_price_commission" => $subAgent->lsk_super_fourth_price_commission,
+            "fifth_price" => $price->lsk_super_fifth_price,
+            "fifth_price_commission" => $subAgent->lsk_super_fifth_price_commission,
+            "sixth_price" => $price->lsk_super_sixth_price,
+            "sixth_price_commission" => $subAgent->lsk_super_sixth_price_commission,
+            "lsk_30" => $price->lsk_super_lsk_30,
+            "seventh_price" => $price->lsk_super_seventh_price,
+            "seventh_price_commission" => $subAgent->lsk_super_seventh_price_commission,
+            "lsk_50" => $price->lsk_super_lsk_50,
+        ],
+        "box" => [
+            "three_different_number" => [
+                "first_price" => $price->box_three_diff_first_price,
+                "first_price_commission" => $subAgent->box_three_diff_first_price_commission,
+                "second_price" => $price->box_three_diff_second_price,
+                "second_price_commission" => $subAgent->box_three_diff_second_price_commission,
+            ],
+
+            "two_same_number" => [
+                "first_price" => $price->box_two_same_first_price,
+                "first_price_commission" => $subAgent->box_two_same_first_price_commission,
+                "second_price" => $price->box_two_same_second_price,
+                "second_price_commission" => $subAgent->box_two_same_second_price_commission,
+            ],
+
+            "three_same_number" => [
+                "first_price" => $price->box_three_same_first_price,
+                "first_price_commission" => $subAgent->box_three_same_first_price_commission,
+            ],
+        ],
+
+         "abc" => [
+                "first_price" => $price->abc_first_price,
+                "first_price_commission" => $subAgent->abc_first_price_commission,
+                "second_price" => $price->abc_second_price,
+                "second_price_commission" => $subAgent->abc_second_price_commission,
+        ],
+        "ab_ac_bc" => [
+                "first_price" => $price->ab_ac_bc_first_price,
+                "first_price_commission" => $subAgent->ab_ac_bc_first_price_commission,
+                "second_price" => $price->ab_ac_bc_second_price,
+                "second_price_commission" => $subAgent->ab_ac_bc_second_price_commission,
+        ],
     ];
 
     /* ✅ SALES COMMISSION */
-    $subAgent->sales_commition = [
+    $subAgent->sales_commission = [
         "editable" => true,
-        "lsk_super" => $subAgent->super_commission_rate,
-        "abc"       => $subAgent->a_commission_rate,
-        "ab_bc_ac"  => $subAgent->ab_commission_rate,
-        "box"       => $subAgent->box_commission_rate,
+        "super_rate" => $subAgent->super_rate,
+        "super_commission_rate" => $subAgent->super_commission_rate,
+        "a_rate"       => $subAgent->a_rate,
+        "a_commission_rate"       => $subAgent->a_commission_rate,
+        "b_rate"       => $subAgent->b_rate,
+        "b_commission_rate"  => $subAgent->b_commission_rate,
+        "c_rate"       => $subAgent->c_rate,
+        "c_commission_rate"       => $subAgent->c_commission_rate,
+        "ab_rate"       => $subAgent->ab_rate,
+        "ab_commission_rate"       => $subAgent->ab_commission_rate,
+        "bc_rate"       => $subAgent->bc_rate,
+        "bc_commission_rate"       => $subAgent->bc_commission_rate,
+        "ac_rate"       => $subAgent->ac_rate,
+        "ac_commission_rate"       => $subAgent->ac_commission_rate,
+        "box_rate"       => $subAgent->box_rate,
+        "box_commission_rate"       => $subAgent->box_commission_rate,
     ];
 
     /* ✅ GAME COUNT LIMIT */
@@ -152,11 +200,29 @@ class SubAgentController extends Controller
     ];
 
     return response()->json([
-        "message" => "Success",
-        "toast_message" => "Sub-agent fetched successfully",
-        "errorCode" => 0,
-        "data" => $subAgent
-    ], 200);
+    "message" => "Success",
+    "toast_message" => "Sub-agent fetched successfully",
+    "errorCode" => 0,
+    "data" => [
+        "id" => $subAgent->id,
+        "username" => $subAgent->username,
+        "user_type" => $subAgent->user_type,
+        "parent_id" => $subAgent->parent_id,
+        "daily_credit_limit" => $subAgent->daily_credit_limit,
+        "weekly_credit_limit" => $subAgent->weekly_credit_limit,
+        "monthly_credit_limit" => $subAgent->monthly_credit_limit,
+        "yearly_credit_limit" => $subAgent->yearly_credit_limit,
+        "status" => $subAgent->status,
+        "created_at" => $subAgent->created_at,
+        "updated_at" => $subAgent->updated_at,
+
+        "game_timeing" => $subAgent->game_timeing,
+        "price_commission" => $subAgent->price_commission,
+        "sales_commission" => $subAgent->sales_commission,
+        "game_count_limit" => $subAgent->game_count_limit,
+        "number_count_limit" => $subAgent->number_count_limit,
+    ]
+], 200);
 }
 
 
@@ -519,62 +585,35 @@ class SubAgentController extends Controller
             'sub_agent_id' => 'required|exists:users,id',
 
             // LSK SUPER
-            'lsk_super_first_price' => 'nullable|numeric|min:0',
-            'lsk_super_first_price_commition' => 'nullable|numeric|min:0',
-
-            'lsk_super_second_price' => 'nullable|numeric|min:0',
-            'lsk_super_second_price_commition' => 'nullable|numeric|min:0',
-
-            'lsk_super_third_price' => 'nullable|numeric|min:0',
-            'lsk_super_third_price_commition' => 'nullable|numeric|min:0',
-
-            'lsk_super_fourth_price' => 'nullable|numeric|min:0',
-            'lsk_super_fourth_price_commition' => 'nullable|numeric|min:0',
-
-            'lsk_super_fifth_price' => 'nullable|numeric|min:0',
-            'lsk_super_fifth_price_commition' => 'nullable|numeric|min:0',
-
-            'lsk_super_sisth_price' => 'nullable|numeric|min:0',
-            'lsk_super_sisth_price_commition' => 'nullable|numeric|min:0',
+            'lsk_super_first_price_commission' => 'nullable|numeric|min:0',
+            'lsk_super_second_price_commission' => 'nullable|numeric|min:0',
+            'lsk_super_third_price_commission' => 'nullable|numeric|min:0',
+            'lsk_super_fourth_price_commission' => 'nullable|numeric|min:0',
+            'lsk_super_fifth_price_commission' => 'nullable|numeric|min:0',
+            'lsk_super_sixth_price_commission' => 'nullable|numeric|min:0',
 
             'lsk_super_lsk_30' => 'nullable|boolean',
-
-            'lsk_super_seventh_price' => 'nullable|numeric|min:0',
-            'lsk_super_seventh_price_commition' => 'nullable|numeric|min:0',
-
+            'lsk_super_seventh_price_commission' => 'nullable|numeric|min:0',
             'lsk_super_lsk_50' => 'nullable|boolean',
 
             // BOX THREE DIFFERENT
-            'box_three_diff_first_price' => 'nullable|numeric|min:0',
-            'box_three_diff_first_price_commition' => 'nullable|numeric|min:0',
-
-            'box_three_diff_second_price' => 'nullable|numeric|min:0',
-            'box_three_diff_second_price_commition' => 'nullable|numeric|min:0',
+            'box_three_diff_first_price_commission' => 'nullable|numeric|min:0',
+            'box_three_diff_second_price_commission' => 'nullable|numeric|min:0',
 
             // BOX TWO SAME
-            'box_two_same_first_price' => 'nullable|numeric|min:0',
-            'box_two_same_first_price_commition' => 'nullable|numeric|min:0',
-
-            'box_two_same_second_price' => 'nullable|numeric|min:0',
-            'box_two_same_second_price_commition' => 'nullable|numeric|min:0',
+            'box_two_same_first_price_commission' => 'nullable|numeric|min:0',
+            'box_two_same_second_price_commission' => 'nullable|numeric|min:0',
 
             // BOX THREE SAME
-            'box_three_same_first_price' => 'nullable|numeric|min:0',
-            'box_three_same_first_price_commition' => 'nullable|numeric|min:0',
+            'box_three_same_first_price_commission' => 'nullable|numeric|min:0',
 
             // ABC
-            'abc_first_price' => 'nullable|numeric|min:0',
-            'abc_first_price_commition' => 'nullable|numeric|min:0',
-
-            'abc_second_price' => 'nullable|numeric|min:0',
-            'abc_second_price_commition' => 'nullable|numeric|min:0',
+            'abc_first_price_commission' => 'nullable|numeric|min:0',
+            'abc_second_price_commission' => 'nullable|numeric|min:0',
 
             // AB_AC_BC
-            'ab_ac_bc_first_price' => 'nullable|numeric|min:0',
-            'ab_ac_bc_first_price_commition' => 'nullable|numeric|min:0',
-
-            'ab_ac_bc_second_price' => 'nullable|numeric|min:0',
-            'ab_ac_bc_second_price_commition' => 'nullable|numeric|min:0',
+            'ab_ac_bc_first_price_commission' => 'nullable|numeric|min:0',
+            'ab_ac_bc_second_price_commission' => 'nullable|numeric|min:0',
         ]);
 
         // ✅ Check sub-agent belongs to this agent
@@ -598,29 +637,29 @@ class SubAgentController extends Controller
 
             // ✅ All commission fields list
             $fields = [
-                'lsk_super_first_price','lsk_super_first_price_commition',
-                'lsk_super_second_price','lsk_super_second_price_commition',
-                'lsk_super_third_price','lsk_super_third_price_commition',
-                'lsk_super_fourth_price','lsk_super_fourth_price_commition',
-                'lsk_super_fifth_price','lsk_super_fifth_price_commition',
-                'lsk_super_sisth_price','lsk_super_sisth_price_commition',
+                'lsk_super_first_price_commission',
+                'lsk_super_second_price_commission',
+                'lsk_super_third_price_commission',
+                'lsk_super_fourth_price_commission',
+                'lsk_super_fifth_price_commission',
+                'lsk_super_sixth_price_commission',
                 'lsk_super_lsk_30',
-                'lsk_super_seventh_price','lsk_super_seventh_price_commition',
+                'lsk_super_seventh_price_commission',
                 'lsk_super_lsk_50',
 
-                'box_three_diff_first_price','box_three_diff_first_price_commition',
-                'box_three_diff_second_price','box_three_diff_second_price_commition',
+                'box_three_diff_first_price_commission',
+                'box_three_diff_second_price_commission',
 
-                'box_two_same_first_price','box_two_same_first_price_commition',
-                'box_two_same_second_price','box_two_same_second_price_commition',
+                'box_two_same_first_price_commission',
+                'box_two_same_second_price_commission',
 
-                'box_three_same_first_price','box_three_same_first_price_commition',
+                'box_three_same_first_price_commission',
 
-                'abc_first_price','abc_first_price_commition',
-                'abc_second_price','abc_second_price_commition',
+                'abc_first_price_commission',
+                'abc_second_price_commission',
 
-                'ab_ac_bc_first_price','ab_ac_bc_first_price_commition',
-                'ab_ac_bc_second_price','ab_ac_bc_second_price_commition',
+                'ab_ac_bc_first_price_commission',
+                'ab_ac_bc_second_price_commission',
             ];
 
             // ✅ Update only sent fields
@@ -642,62 +681,48 @@ class SubAgentController extends Controller
                 "sub_agent_id" => $subAgent->id,
 
                 // ✅ LSK SUPER
-                "lsk_super_first_price" => $subAgent->lsk_super_first_price,
-                "lsk_super_first_price_commition" => $subAgent->lsk_super_first_price_commition,
+                "lsk_super_first_price_commission" => $subAgent->lsk_super_first_price_commission,
 
-                "lsk_super_second_price" => $subAgent->lsk_super_second_price,
-                "lsk_super_second_price_commition" => $subAgent->lsk_super_second_price_commition,
+                "lsk_super_second_price_commission" => $subAgent->lsk_super_second_price_commission,
 
-                "lsk_super_third_price" => $subAgent->lsk_super_third_price,
-                "lsk_super_third_price_commition" => $subAgent->lsk_super_third_price_commition,
+                "lsk_super_third_price_commission" => $subAgent->lsk_super_third_price_commission,
 
-                "lsk_super_fourth_price" => $subAgent->lsk_super_fourth_price,
-                "lsk_super_fourth_price_commition" => $subAgent->lsk_super_fourth_price_commition,
+                "lsk_super_fourth_price_commission" => $subAgent->lsk_super_fourth_price_commission,
 
-                "lsk_super_fifth_price" => $subAgent->lsk_super_fifth_price,
-                "lsk_super_fifth_price_commition" => $subAgent->lsk_super_fifth_price_commition,
+                "lsk_super_fourth_price_commission" => $subAgent->lsk_super_fourth_price_commission,
 
-                "lsk_super_sisth_price" => $subAgent->lsk_super_sisth_price,
-                "lsk_super_sisth_price_commition" => $subAgent->lsk_super_sisth_price_commition,
+                "lsk_super_fifth_price_commission" => $subAgent->lsk_super_fifth_price_commission,
+
+                "lsk_super_sixth_price_commission" => $subAgent->lsk_super_sixth_price_commission,
 
                 "lsk_super_lsk_30" => $subAgent->lsk_super_lsk_30,
 
-                "lsk_super_seventh_price" => $subAgent->lsk_super_seventh_price,
-                "lsk_super_seventh_price_commition" => $subAgent->lsk_super_seventh_price_commition,
+                "lsk_super_seventh_price_commission" => $subAgent->lsk_super_seventh_price_commission,
 
                 "lsk_super_lsk_50" => $subAgent->lsk_super_lsk_50,
 
                 // ✅ BOX THREE DIFFERENT
-                "box_three_diff_first_price" => $subAgent->box_three_diff_first_price,
-                "box_three_diff_first_price_commition" => $subAgent->box_three_diff_first_price_commition,
+                "box_three_diff_first_price_commission" => $subAgent->box_three_diff_first_price_commission,
 
-                "box_three_diff_second_price" => $subAgent->box_three_diff_second_price,
-                "box_three_diff_second_price_commition" => $subAgent->box_three_diff_second_price_commition,
+                "box_three_diff_second_price_commission" => $subAgent->box_three_diff_second_price_commission,
 
                 // ✅ BOX TWO SAME
-                "box_two_same_first_price" => $subAgent->box_two_same_first_price,
-                "box_two_same_first_price_commition" => $subAgent->box_two_same_first_price_commition,
+                "box_two_same_first_price_commission" => $subAgent->box_two_same_first_price_commission,
 
-                "box_two_same_second_price" => $subAgent->box_two_same_second_price,
-                "box_two_same_second_price_commition" => $subAgent->box_two_same_second_price_commition,
+                "box_two_same_second_price_commission" => $subAgent->box_two_same_second_price_commission,
 
                 // ✅ BOX THREE SAME
-                "box_three_same_first_price" => $subAgent->box_three_same_first_price,
-                "box_three_same_first_price_commition" => $subAgent->box_three_same_first_price_commition,
+                "box_three_same_first_price_commission" => $subAgent->box_three_same_first_price_commission,
 
                 // ✅ ABC
-                "abc_first_price" => $subAgent->abc_first_price,
-                "abc_first_price_commition" => $subAgent->abc_first_price_commition,
+                "abc_first_price_commission" => $subAgent->abc_first_price_commission,
 
-                "abc_second_price" => $subAgent->abc_second_price,
-                "abc_second_price_commition" => $subAgent->abc_second_price_commition,
+                "abc_second_price_commission" => $subAgent->abc_second_price_commission,
 
                 // ✅ AB AC BC
-                "ab_ac_bc_first_price" => $subAgent->ab_ac_bc_first_price,
-                "ab_ac_bc_first_price_commition" => $subAgent->ab_ac_bc_first_price_commition,
+                "ab_ac_bc_first_price_commission" => $subAgent->ab_ac_bc_first_price_commission,
 
-                "ab_ac_bc_second_price" => $subAgent->ab_ac_bc_second_price,
-                "ab_ac_bc_second_price_commition" => $subAgent->ab_ac_bc_second_price_commition,
+                "ab_ac_bc_second_price_commission" => $subAgent->ab_ac_bc_second_price_commission,
             ]
         ], 200);
 

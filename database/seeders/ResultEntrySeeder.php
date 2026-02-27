@@ -61,7 +61,7 @@ class ResultEntrySeeder extends Seeder
                     'twenty_eight' => str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT),
                     'twenty_nine' => str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT),
                     'thirty' => str_pad(rand(100, 999), 3, '0', STR_PAD_LEFT),
-                    'status' => 'published',
+                    'status' => true,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

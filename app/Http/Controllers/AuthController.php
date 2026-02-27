@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 
 class AuthController extends Controller
@@ -46,6 +47,41 @@ class AuthController extends Controller
                 "user_name" => $user->username,
                 "user_id" => $user->id,
                 "token" => $token
+            ]
+        ], 200);
+    }
+
+    public function logout(Request $request)
+    {
+        // Revoke the current access token
+        $request->user()->token()->revoke();
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "Logout successful",
+            "errorCode" => 0,
+            "data" => null
+        ], 200);
+    }
+
+    public function changeStatus(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'status'  => 'required|boolean',
+        ]);
+
+        $user = User::find($request->user_id);
+        $user->status = $request->status;
+        $user->save();
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "User status updated successfully",
+            "errorCode" => 0,
+            "data" => [
+                "user_id" => $user->id,
+                "status"  => $user->status
             ]
         ], 200);
     }

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\ResultController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\Agent\AgentDashboardController;
 use App\Http\Controllers\Agent\SubAgentListController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 
 // Authentication Routes
 Route::post('/user-login', [AuthController::class, 'login']);
+Route::middleware('auth:api')->get('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:api')->put('/user/status', [AuthController::class, 'changeStatus']);
 
 Route::middleware('auth:api')->group(function () {
     Route::get('/game', [GameController::class, 'index']);
@@ -42,7 +45,7 @@ Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardCon
 Route::middleware('auth:api')->get('/sub-agent-limit-check', [SubAgentLimitCheckController::class, 'index']);
 
 
-
+Route::middleware('auth:api')->get('/result', [ResultController::class, 'index']);
 
 
 // Bill - PDF routes must come BEFORE resource routes

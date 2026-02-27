@@ -51,72 +51,56 @@ return new class extends Migration
 
         // ===== LSK SUPER COMMISSION =====
 
-        $table->string('lsk_super_first_price')->default("5000");
-        $table->string('lsk_super_first_price_commition')->default("2");
+        $table->string('lsk_super_first_price_commission')->default("2");
 
-        $table->string('lsk_super_second_price')->default("3000");
-        $table->string('lsk_super_second_price_commition')->default("2");
+        $table->string('lsk_super_second_price_commission')->default("2");
 
-        $table->string('lsk_super_third_price')->default("2000");
-        $table->string('lsk_super_third_price_commition')->default("2");
+        $table->string('lsk_super_third_price_commission')->default("2");
 
-        $table->string('lsk_super_fourth_price')->default("1000");
-        $table->string('lsk_super_fourth_price_commition')->default("2");
+        $table->string('lsk_super_fourth_price_commission')->default("2");
 
-        $table->string('lsk_super_fifth_price')->default("500");
-        $table->string('lsk_super_fifth_price_commition')->default("2");
+        $table->string('lsk_super_fifth_price_commission')->default("2");
 
-        $table->string('lsk_super_sisth_price')->default("200");
-        $table->string('lsk_super_sisth_price_commition')->default("2");
+        $table->string('lsk_super_sixth_price_commission')->default("2");
 
         $table->boolean('lsk_super_lsk_30')->default(true);
 
-        $table->string('lsk_super_seventh_price')->default("100");
-        $table->string('lsk_super_seventh_price_commition')->default("2");
+        $table->string('lsk_super_seventh_price_commission')->default("2");
 
         $table->boolean('lsk_super_lsk_50')->default(true);
 
 
         // ===== BOX: THREE DIFFERENT NUMBER =====
 
-        $table->string('box_three_diff_first_price')->default("5000");
-        $table->string('box_three_diff_first_price_commition')->default("2");
+        $table->string('box_three_diff_first_price_commission')->default("2");
 
-        $table->string('box_three_diff_second_price')->default("3000");
-        $table->string('box_three_diff_second_price_commition')->default("2");
+        $table->string('box_three_diff_second_price_commission')->default("2");
 
 
         // ===== BOX: TWO SAME NUMBER =====
 
-        $table->string('box_two_same_first_price')->default("5000");
-        $table->string('box_two_same_first_price_commition')->default("2");
+        $table->string('box_two_same_first_price_commission')->default("2");
 
-        $table->string('box_two_same_second_price')->default("3000");
-        $table->string('box_two_same_second_price_commition')->default("2");
+        $table->string('box_two_same_second_price_commission')->default("2");
 
 
         // ===== BOX: THREE SAME NUMBER =====
 
-        $table->string('box_three_same_first_price')->default("5000");
-        $table->string('box_three_same_first_price_commition')->default("2");
+        $table->string('box_three_same_first_price_commission')->default("2");
 
 
         // ===== ABC COMMISSION =====
 
-        $table->string('abc_first_price')->default("5000");
-        $table->string('abc_first_price_commition')->default("2");
+        $table->string('abc_first_price_commission')->default("2");
 
-        $table->string('abc_second_price')->default("3000");
-        $table->string('abc_second_price_commition')->default("2");
+        $table->string('abc_second_price_commission')->default("2");
 
 
         // ===== AB_AC_BC COMMISSION =====
 
-        $table->string('ab_ac_bc_first_price')->default("5000");
-        $table->string('ab_ac_bc_first_price_commition')->default("2");
+        $table->string('ab_ac_bc_first_price_commission')->default("2");
 
-        $table->string('ab_ac_bc_second_price')->default("3000");
-        $table->string('ab_ac_bc_second_price_commition')->default("2");
+        $table->string('ab_ac_bc_second_price_commission')->default("2");
 
 
         // ===== GAME COUNT LIMIT SETTINGS =====
