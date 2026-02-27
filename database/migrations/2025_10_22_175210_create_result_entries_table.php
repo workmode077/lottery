@@ -39,7 +39,7 @@ return new class extends Migration
             $table->unsignedSmallInteger($col)
                 ->comment('3-digit number');
         }
-         $table->text('link')->comment('link');
+         $table->text('link')->nullable()->comment('link');
         // Status enum
         $table->boolean('status')->default(true)->comment('active status');
 
