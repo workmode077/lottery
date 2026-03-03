@@ -29,7 +29,8 @@ return new class extends Migration
 
             $table->unsignedInteger('number');
             $table->unsignedInteger('count')->default(1);
-            $table->unsignedInteger('price');
+            $table->unsignedInteger('price')->nullable();
+            $table->unsignedInteger('commission')->nullable();
 
             $table->softDeletes(); 
             $table->timestamps();

@@ -261,12 +261,13 @@ class BillController extends Controller
 
                 // price = user rate + user commission
                 $price = $user->$rateField + $user->$commissionField;
-
+            // dd($rateField, $commissionField);
                 $bill->items()->create([
                     'type'   => $game,
                     'number' => $item['number'],
                     'count'  => $item['count'],
-                    'price'  => $price,
+                    'price'  => $user->$rateField ,
+                    'commission'  => $user->$commissionField,
                 ]);
             }
 

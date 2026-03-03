@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\BillController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Agent\AgentDashboardController;
 use App\Http\Controllers\Agent\SubAgentListController;
 use App\Http\Controllers\Agent\SubAgentController;
@@ -43,6 +44,14 @@ Route::middleware('auth:api')->post('/sub-agent-number-count-limit', [SubAgentCo
 // Sub-Agent
 Route::middleware('auth:api')->get('/sub-agent-dashboard', [SubAgentDashboardController::class, 'index']);
 Route::middleware('auth:api')->get('/sub-agent-limit-check', [SubAgentLimitCheckController::class, 'index']);
+
+
+
+// Report
+Route::middleware('auth:api')->get('/sale-report', [ReportController::class, 'saleReport']);
+Route::middleware('auth:api')->get('/winning-report', [ReportController::class, 'winningReport']);
+Route::middleware('auth:api')->get('/count-report', [ReportController::class, 'countReport']);
+Route::middleware('auth:api')->get('/daily-report', [ReportController::class, 'dailyReport']);
 
 
 Route::middleware('auth:api')->get('/result', [ResultController::class, 'index']);
