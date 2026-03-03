@@ -117,9 +117,59 @@ class ReportController extends Controller
         // Logic for generating winning report
     }
 
-    public function countReport(Request $request)
+   public function countReport(Request $request)
     {
-        // Logic for generating count report
+        $validated = $this->validateReportRequest($request);
+
+        $query = DB::table('bill_items')
+            ->join('bills', 'bill_items.bill_id', '=', 'bills.id')
+            ->whereNull('bills.deleted_at')
+            ->whereNull('bill_items.deleted_at');
+
+        // 🔹 Date Filter
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('bills.created_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59'
+            ]);
+        }
+
+        // 🔹 Game Filter
+        if ($request->filled('game_id')) {
+            $query->where('bills.game_id', $request->game_id);
+        }
+
+        // 🔹 Sub Dealer Filter
+        if ($request->filled('sub_dealer')) {
+            $query->where('bills.user_id', $request->sub_dealer);
+        }
+
+        // 🔹 Type Filter
+        if ($request->filled('type')) {
+            $query->where('bill_items.type', $request->type);
+        }
+
+        // 🔹 Number Filter
+        if ($request->filled('number')) {
+            $query->where('bill_items.number', $request->number);
+        }
+
+        // ✅ Group By Type
+        $report = $query->select(
+                'bill_items.type',
+                DB::raw('SUM(bill_items.count) as total_count'),
+                DB::raw('SUM(bill_items.price * bill_items.count) as total_price'),
+                DB::raw('SUM(bills.total_commission) as total_commission')
+            )
+            ->groupBy('bill_items.type')
+            ->get();
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "Count report generated successfully",
+            "errorCode" => 0,
+            "data" => $report
+        ]);
     }
 
     public function dailyReport(Request $request)
