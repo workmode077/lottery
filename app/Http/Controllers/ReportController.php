@@ -115,11 +115,13 @@ class ReportController extends Controller
             return [
                 "id"                => $bill->id,
                 "username"          => $bill->user->username ?? null,
+                "customer_name"          => $bill->customer_name ?? null,
                 "game_time"         => $bill->game->time ?? null,
                 "total_count"       => $bill->total_count,
                 "total"             => $bill->total_rate,
                 "dealer_commission" => $bill->total_commission,
                 "grand_total"       => $bill->total_rate + $bill->total_commission,
+                "created_at"       => $bill->created_at ? date('Y-m-d H:i:s', strtotime($bill->created_at)) : null,
                 "bill_items"        => $bill->billItems
             ];
         });
@@ -224,15 +226,12 @@ class ReportController extends Controller
         $bills = $query->get();
 
         // Type display order: SUPER → BOX → AB → BC → AC → A → B → C
-        $typeOrder     = ['SUPER', 'BOX', 'AB', 'BC', 'AC', 'A', 'B', 'C'];
-        $prizeOrder    = ['First Prize', 'Second Prize', 'Third Prize', 'Fourth Prize', 'Fifth Prize', 'Special Prize'];
+        $typeOrder  = ['SUPER', 'BOX', 'AB', 'BC', 'AC', 'A', 'B', 'C'];
 
-        // Pre-build nested structure: type → prize_label → []
-        $grouped = [];
+        // Intermediate: type → prize_label → []
+        $raw = [];
         foreach ($typeOrder as $t) {
-            foreach ($prizeOrder as $p) {
-                $grouped[$t][$p] = [];
-            }
+            $raw[$t] = [];
         }
 
         $totalCount      = 0;
@@ -253,6 +252,9 @@ class ReportController extends Controller
                 'username'      => $bill->user->username ?? null,
                 'game_time'     => $bill->game->time ?? null,
                 'customer_name' => $bill->customer_name,
+                'created_at'    => $bill->created_at
+                    ? date('Y-m-d H:i:s', strtotime($bill->created_at))
+                    : null,
             ];
 
             foreach ($bill->billItems as $item) {
@@ -292,7 +294,7 @@ class ReportController extends Controller
                     $grandTotal      += $winAmount;
                     $totalCommission += $priceCommission;
 
-                    $grouped[$item->type][$prizeInfo['label']][] = array_merge($billInfo, [
+                    $raw[$item->type][$prizeInfo['label']][] = array_merge($billInfo, [
                         'item_id'          => $item->id,
                         'number'           => $item->number,
                         'count'            => $item->count,
@@ -302,6 +304,26 @@ class ReportController extends Controller
                     ]);
                 }
             }
+        }
+
+        // Convert to output structure:
+        // results = [{ ticket_id, ticket_name, prizes: [{ prize_name, ...itemFields }] }]
+        $results = [];
+        foreach ($typeOrder as $ticketId => $typeName) {
+            $prizes = [];
+            foreach ($raw[$typeName] as $prizeName => $items) {
+                foreach ($items as $item) {
+                    $prizes[] = array_merge(
+                        ['prize_name' => strtoupper($prizeName)],
+                        $item
+                    );
+                }
+            }
+            $results[] = [
+                'ticket_id'   => $ticketId + 1,
+                'ticket_name' => $typeName,
+                'prizes'      => $prizes,
+            ];
         }
 
         return response()->json([
@@ -315,7 +337,7 @@ class ReportController extends Controller
                     'total_commission' => $totalCommission,
                     'grand_total'      => $grandTotal - $totalCommission,
                 ],
-                'results' => $grouped,
+                'results' => $results,
             ],
         ]);
     }
