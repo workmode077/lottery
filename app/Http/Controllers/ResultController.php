@@ -25,8 +25,8 @@ class ResultController extends Controller
             return response()->json([
                 "message" => "Success",
                 "toast_message" => "No result found for selected date",
-                "errorCode" => 1,
-                "data" => null
+                "errorCode" => 0,
+                "data" => (object)[]
             ], 200);
         }
 
@@ -43,27 +43,27 @@ class ResultController extends Controller
                     [
                         "label" => "First Prize",
                         "number" => $result->prize_one,
-                        "color" => "#FF0000" // Red
+                        "color" => "#EEA475" // Red
                     ],
                     [
                         "label" => "Second Prize",
                         "number" => $result->prize_two,
-                        "color" => "#0000FF" // Blue
+                        "color" => "#FDD7F6" 
                     ],
                     [
                         "label" => "Third Prize",
                         "number" => $result->prize_three,
-                        "color" => "#008000" // Green
+                        "color" => "#068C45" 
                     ],
                     [
                         "label" => "Fourth Prize",
                         "number" => $result->prize_four,
-                        "color" => "#FFA500" // Orange
+                        "color" => "#F3DCCE" 
                     ],
                     [
                         "label" => "Fifth Prize",
                         "number" => $result->prize_five,
-                        "color" => "#800080" // Purple
+                        "color" => "#FAF2D8" 
                     ]
                 ],
 
