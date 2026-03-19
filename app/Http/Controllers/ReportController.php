@@ -578,17 +578,26 @@ class ReportController extends Controller
         $report = $query->select(
                 'bill_items.type',
                 DB::raw('SUM(bill_items.count) as total_count'),
-                DB::raw('SUM(bill_items.price * bill_items.count) as total_price'),
+                DB::raw('SUM(bills.total_rate) as total_price'),
                 DB::raw('SUM(bills.total_commission) as total_commission')
             )
             ->groupBy('bill_items.type')
             ->get();
 
+        $summary = [
+            'grand_count'      => $report->sum('total_count'),
+            'grand_price'      => $report->sum('total_price'),
+            'grand_commission' => $report->sum('total_commission'),
+        ];
+
         return response()->json([
             "message" => "Success",
             "toast_message" => "Count report generated successfully",
             "errorCode" => 0,
-            "data" => $report
+            "data" => [
+                "summary" => $summary,
+                "report"  => $report,
+            ]
         ]);
     }
 
