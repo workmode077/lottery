@@ -103,11 +103,11 @@ class ReportController extends Controller
 
         // ✅ Summary
         $summary = [
-            'total_bills'        => $summaryQuery->count(),
-            'total_count'        => $summaryQuery->sum('total_count'),
-            'total'              => $summaryQuery->sum('total_rate'),
-            'dealer_commission'  => $summaryQuery->sum('total_commission'),
-            'grand_total'        => $summaryQuery->sum(DB::raw('total_rate + total_commission')),
+            'total_bills'        => (string) $summaryQuery->count(),
+            'total_count'        => (string) $summaryQuery->sum('total_count'),
+            'total'              => (string) $summaryQuery->sum('total_rate'),
+            'dealer_commission'  => (string) $summaryQuery->sum('total_commission'),
+            'grand_total'        => (string) $summaryQuery->sum(DB::raw('total_rate + total_commission')),
         ];
 
         // ✅ Transform Bills Response
@@ -332,10 +332,10 @@ class ReportController extends Controller
             'errorCode'     => 0,
             'data'          => [
                 'summary' => [
-                    'total_count'      => $totalCount,
-                    'total'            => $grandTotal,
-                    'total_commission' => $totalCommission,
-                    'grand_total'      => $grandTotal - $totalCommission,
+                    'total_count'      => (string) $totalCount,
+                    'total'            => (string) $grandTotal,
+                    'total_commission' => (string) $totalCommission,
+                    'grand_total'      => (string) ($grandTotal - $totalCommission),
                 ],
                 'results' => $results,
             ],
@@ -606,85 +606,166 @@ class ReportController extends Controller
         $validated = $this->validateReportRequest($request);
 
         $typeKeyMap = [
-            0 => ['A', 'B', 'C','AB', 'AC', 'BC','SUPER', 'BOX'],
+            0 => ['A', 'B', 'C', 'AB', 'AC', 'BC', 'SUPER', 'BOX'],
             1 => ['A', 'B', 'C'],
             2 => ['AB', 'AC', 'BC'],
             3 => ['SUPER', 'BOX'],
         ];
 
-        $query = DB::table('bills')
-            ->join('users', 'bills.user_id', '=', 'users.id')
-            ->whereNull('bills.deleted_at');
+        $typeOrder = ['SUPER', 'BOX', 'AB', 'BC', 'AC', 'A', 'B', 'C'];
 
-        // Date Filter
+        // Prize column map (same as winningReport)
+        $prizeColumnMap = [
+            'prize_one'   => ['position' => 1],
+            'prize_two'   => ['position' => 2],
+            'prize_three' => ['position' => 3],
+            'prize_four'  => ['position' => 4],
+            'prize_five'  => ['position' => 5],
+        ];
+        foreach (['one','two','three','four','five','six','seven','eight','nine','ten',
+                  'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen',
+                  'eighteen','nineteen','twenty','twenty_one','twenty_two','twenty_three',
+                  'twenty_four','twenty_five','twenty_six','twenty_seven','twenty_eight',
+                  'twenty_nine','thirty'] as $col) {
+            $prizeColumnMap[$col] = ['position' => 6];
+        }
+
+        $prices = DB::table('prices')->first();
+
+        // Load result entries
+        $resultQuery = ResultEntry::query();
+        if ($request->filled('game_id')) {
+            $resultQuery->where('game_id', $request->game_id);
+        }
         if ($request->filled('from_date') && $request->filled('to_date')) {
-            $query->whereBetween('bills.created_at', [
+            $resultQuery->whereBetween('date', [
                 $request->from_date . ' 00:00:00',
-                $request->to_date . ' 23:59:59'
+                $request->to_date . ' 23:59:59',
             ]);
         }
+        $resultEntries = $resultQuery->get()->keyBy(function ($r) {
+            return $r->game_id . '_' . date('Y-m-d', strtotime($r->date));
+        });
 
-        // Game Filter
+        // Load user commission columns
+        $userColumns = 'id,username,lsk_super_first_price_commission,lsk_super_second_price_commission,'
+            . 'lsk_super_third_price_commission,lsk_super_fourth_price_commission,lsk_super_fifth_price_commission,'
+            . 'lsk_super_sixth_price_commission,box_three_diff_first_price_commission,'
+            . 'box_three_diff_second_price_commission,box_two_same_first_price_commission,'
+            . 'box_two_same_second_price_commission,box_three_same_first_price_commission,'
+            . 'abc_first_price_commission,abc_second_price_commission,'
+            . 'ab_ac_bc_first_price_commission,ab_ac_bc_second_price_commission';
+
+        $query = Bill::query()
+            ->with(['billItems', 'user:' . $userColumns, 'game:id,time']);
+
+        if ($request->filled('from_date') && $request->filled('to_date')) {
+            $query->whereBetween('created_at', [
+                $request->from_date . ' 00:00:00',
+                $request->to_date . ' 23:59:59',
+            ]);
+        }
         if ($request->filled('game_id')) {
-            $query->where('bills.game_id', $request->game_id);
+            $query->where('game_id', $request->game_id);
         }
-
-        // Sub Dealer Filter
         if ($request->filled('sub_dealer')) {
-            $query->where('bills.user_id', $request->sub_dealer);
+            $query->where('user_id', $request->sub_dealer);
         }
-
-        // Type / Number / Type Key Filter
         if ($request->filled('type') || $request->filled('number') || $request->filled('type_key')) {
-            $query->whereExists(function ($q) use ($request, $typeKeyMap) {
-                $q->select(DB::raw(1))
-                    ->from('bill_items')
-                    ->whereColumn('bill_items.bill_id', 'bills.id')
-                    ->whereNull('bill_items.deleted_at');
-
+            $query->whereHas('billItems', function ($q) use ($request, $typeKeyMap) {
                 if ($request->filled('type_key') && isset($typeKeyMap[$request->type_key])) {
-                    $q->whereIn('bill_items.type', $typeKeyMap[$request->type_key]);
+                    $q->whereIn('type', $typeKeyMap[$request->type_key]);
                 }
-
                 if ($request->filled('type')) {
-                    $q->where('bill_items.type', $request->type);
+                    $q->where('type', $request->type);
                 }
-
                 if ($request->filled('number')) {
-                    $q->where('bill_items.number', $request->number);
+                    $q->where('number', $request->number);
                 }
             });
         }
 
-        $report = $query->select(
-                'users.username',
-                DB::raw('SUM(bills.total_count) as total_count'),
-                DB::raw('SUM(bills.total_rate) as total_sale'),
-                DB::raw('SUM(bills.total_commission) as sale_commission'),
-                DB::raw('SUM(bills.total_rate + bills.total_commission) as total')
-            )
-            ->groupBy('bills.user_id', 'users.username')
-            ->get();
+        $bills = $query->get();
 
-        // Games in summary
-        if ($request->filled('game_id')) {
-            $games = DB::table('games')
-                ->where('id', $request->game_id)
-                ->select('id', 'time')
-                ->first();
-        } else {
-            $games = 'All Game';
+        // Accumulate per user: total_sale, price (win amount), price_commission
+        $userMap = [];
+
+        foreach ($bills as $bill) {
+            $userId   = $bill->user_id;
+            $username = $bill->user->username ?? null;
+
+            if (!isset($userMap[$userId])) {
+                $userMap[$userId] = [
+                    'username'         => $username,
+                    'total_sale'       => 0,
+                    'price'            => 0,
+                    'price_commission' => 0,
+                ];
+            }
+
+            $userMap[$userId]['total_sale'] += (float) $bill->total_rate;
+
+            $billDate    = date('Y-m-d', strtotime($bill->created_at));
+            $key         = $bill->game_id . '_' . $billDate;
+            $resultEntry = $resultEntries->get($key);
+
+            if (!$resultEntry) {
+                continue;
+            }
+
+            foreach ($bill->billItems as $item) {
+                if (!in_array($item->type, $typeOrder)) {
+                    continue;
+                }
+
+                foreach ($prizeColumnMap as $col => $prizeInfo) {
+                    if (!isset($resultEntry->$col) || $resultEntry->$col === null) {
+                        continue;
+                    }
+                    $resultNumber = (int) $resultEntry->$col;
+
+                    if (!$this->checkMatch($item->type, (int) $item->number, $resultNumber)) {
+                        continue;
+                    }
+
+                    $winAmount = $this->calculateWinAmount(
+                        $item->type,
+                        (int) $item->number,
+                        $prizeInfo['position'],
+                        (int) $item->count,
+                        $prices
+                    );
+
+                    $commissionRate  = $this->getUserCommissionRate(
+                        $item->type,
+                        (int) $item->number,
+                        $prizeInfo['position'],
+                        $bill->user
+                    );
+                    $priceCommission = (int) round($winAmount * $commissionRate / 100);
+
+                    $userMap[$userId]['price']            += $winAmount;
+                    $userMap[$userId]['price_commission'] += $priceCommission;
+                }
+            }
         }
 
+        // Build users array with total
+        $users = array_values(array_map(function ($row) {
+            $row['total'] = $row['total_sale'] - $row['price'] + $row['price_commission'];
+            return $row;
+        }, $userMap));
+
+        $usersCollection = collect($users);
+
         $summary = [
-            'from_date'        => $request->filled('from_date') ? $request->from_date : null,
-            'to_date'          => $request->filled('to_date') ? $request->to_date : null,
-            'games'            => $games,
-            'total_count'      => $report->sum('total_count'),
-            'total_sale'       => $report->sum('total_sale'),
-            'sale_commission'  => $report->sum('sale_commission'),
-            'total'            => $report->sum('total'),
+            'total_sale'       => (string) $usersCollection->sum('total_sale'),
+            'price'            => (string) $usersCollection->sum('price'),
+            'price_commission' => (string) $usersCollection->sum('price_commission'),
+            'total'            => (string) $usersCollection->sum('total'),
         ];
+
+        
 
         return response()->json([
             "message"       => "Success",
@@ -692,8 +773,9 @@ class ReportController extends Controller
             "errorCode"     => 0,
             "data"          => [
                 "summary" => $summary,
-                "users"   => $report
+                "users"   => $users,
             ]
         ]);
     }
+
 }
