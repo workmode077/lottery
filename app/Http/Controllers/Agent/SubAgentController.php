@@ -30,7 +30,7 @@ class SubAgentController extends Controller
         }
 
         $subAgents = $authUser->subAgents()
-            ->where('status', true)
+            // ->where('status', true)
             ->select('id', 'username', 'status')
             ->get();
 
