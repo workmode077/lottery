@@ -601,9 +601,10 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // ✅ Validation
-        $request->validate([
-            'sub_agent_id' => 'required|exists:users,id',
+
+
+        $validator = Validator::make($request->all(), [
+             'sub_agent_id' => 'required|exists:users,id',
 
             // LSK SUPER
             'lsk_super_first_price_commission' => 'nullable|numeric|min:0',
@@ -636,6 +637,19 @@ class SubAgentController extends Controller
             'ab_ac_bc_first_price_commission' => 'nullable|numeric|min:0',
             'ab_ac_bc_second_price_commission' => 'nullable|numeric|min:0',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
+
+
+
 
         // ✅ Check sub-agent belongs to this agent
         $subAgent = User::where('id', $request->sub_agent_id)
@@ -778,9 +792,10 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // ✅ Validation
-        $request->validate([
-            'sub_agent_id' => 'required|exists:users,id',
+      
+
+         $validator = Validator::make($request->all(), [
+             'sub_agent_id' => 'required|exists:users,id',
 
             'game_count_editable' => 'nullable|boolean',
 
@@ -798,6 +813,19 @@ class SubAgentController extends Controller
             'game_count_ac' => 'nullable|numeric|min:0',
             'game_count_bc' => 'nullable|numeric|min:0',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
+
+
+
 
         // ✅ Check sub-agent belongs to this agent
         $subAgent = User::where('id', $request->sub_agent_id)
