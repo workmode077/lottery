@@ -339,8 +339,10 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // Validation
-        $request->validate([
+       
+
+          // Validation
+        $validator = Validator::make($request->all(), [
             'sub_agent_id' => 'required|exists:users,id',
             'username' => 'nullable|string|max:255|unique:users,username,' . $request->sub_agent_id,
             'password' => 'nullable|string|min:6',
@@ -354,6 +356,15 @@ class SubAgentController extends Controller
         ], [
             'confirm_password.same' => 'Confirm password must match password',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
 
         $subAgent = User::where('id', $request->sub_agent_id)
             ->where('user_type', 'sub_agent')
