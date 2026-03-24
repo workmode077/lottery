@@ -894,8 +894,9 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // ✅ Validation
-        $request->validate([
+       
+
+         $validator = Validator::make($request->all(), [
             'sub_agent_id' => 'required|exists:users,id',
             'limits' => 'required|array|min:1',
 
@@ -904,6 +905,17 @@ class SubAgentController extends Controller
             'limits.*.number' => 'required|integer|min:0',
             'limits.*.count' => 'required|integer|min:0',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
+
 
         // ✅ Ownership check
         $subAgent = User::where('id', $request->sub_agent_id)
@@ -920,28 +932,39 @@ class SubAgentController extends Controller
             ], 404);
         }
 
+        // ✅ Duplicate check within the request itself
+        $seen = [];
+        foreach ($request->limits as $limit) {
+            $key = $limit['game_id'] . '_' . strtolower($limit['type']) . '_' . $limit['number'];
+            if (in_array($key, $seen)) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Duplicate entry: game_id={$limit['game_id']}, type={$limit['type']}, number={$limit['number']}",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+            $seen[] = $key;
+        }
+
         DB::beginTransaction();
 
         try {
 
+            // ✅ Delete all existing records (including soft-deleted) for this sub-agent and replace fresh
+            NumberCountLimit::withTrashed()->where('user_id', $subAgent->id)->forceDelete();
+
             $savedLimits = [];
 
-            // ✅ Save each limit
             foreach ($request->limits as $limit) {
+                $record = NumberCountLimit::create([
+                    'user_id' => $subAgent->id,
+                    'game_id' => $limit['game_id'],
+                    'type'    => strtolower($limit['type']),
+                    'number'  => $limit['number'],
+                    'count'   => $limit['count'],
+                ]);
 
-                $record = NumberCountLimit::updateOrCreate(
-                    [
-                        'user_id' => $subAgent->id,
-                        'game_id' => $limit['game_id'],
-                        'type'    => $limit['type'],
-                        'number'  => $limit['number'],
-                    ],
-                    [
-                        'count' => $limit['count'],
-                    ]
-                );
-
-                // ✅ Collect updated record for response
                 $savedLimits[] = [
                     "id"      => $record->id,
                     "game_id" => $record->game_id,
