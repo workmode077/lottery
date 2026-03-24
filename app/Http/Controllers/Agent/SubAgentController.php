@@ -46,7 +46,7 @@ class SubAgentController extends Controller
     }
 
 
-  public function viewSingleSubAgent(Request $request, $id)
+public function viewSingleSubAgent(Request $request, $id)
 {
     $authUser = $request->user();
 
@@ -208,6 +208,8 @@ class SubAgentController extends Controller
         "username" => $subAgent->username,
         "user_type" => $subAgent->user_type,
         "parent_id" => $subAgent->parent_id,
+        "agent" => $authUser->username,
+        'plain_password' => $subAgent->plain_password,
         "daily_credit_limit" => $subAgent->daily_credit_limit,
         "weekly_credit_limit" => $subAgent->weekly_credit_limit,
         "monthly_credit_limit" => $subAgent->monthly_credit_limit,
