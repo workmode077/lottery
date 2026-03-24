@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Validator;
 
 class BillController extends Controller
 {
@@ -137,8 +138,10 @@ class BillController extends Controller
             ], 200);
         }
 
-        // ✅ Validation
-        $request->validate([
+        
+
+        // Validation
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
             'game_id' => 'required|exists:games,id',
             'customer_name' => 'required|string|max:255',
@@ -147,6 +150,15 @@ class BillController extends Controller
             'items.*.number' => 'required|integer|min:0',
             'items.*.count' => 'required|integer|min:1',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
 
 
          if ($authUser->user_type === 'agent') {
@@ -511,15 +523,26 @@ class BillController extends Controller
             ], 200);
         }
 
-        // ✅ Validation
-        $request->validate([
-            'game_id' => 'required|exists:games,id',
+       
+
+         // Validation
+        $validator = Validator::make($request->all(), [
+           'game_id' => 'required|exists:games,id',
             'customer_name' => 'required|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.game' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
             'items.*.number' => 'required|integer|min:1',
             'items.*.count' => 'required|integer|min:1',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
 
         // ✅ Game time check
         $gameTimeCheck = $this->isGameTimeValid($request->game_id);
