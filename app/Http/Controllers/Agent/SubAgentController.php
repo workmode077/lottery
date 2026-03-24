@@ -234,7 +234,7 @@ class SubAgentController extends Controller
 
 
 
-  public function subAgentCreate(Request $request)
+    public function subAgentCreate(Request $request)
     {
         $authUser = $request->user();
 
@@ -326,7 +326,9 @@ class SubAgentController extends Controller
         }
     }
 
-  public function subAgentEdit(Request $request)
+
+
+    public function subAgentEdit(Request $request)
     {
         $authUser = $request->user();
 
@@ -457,7 +459,7 @@ class SubAgentController extends Controller
         }
     }
 
-  public function subAgentSaleCommission(Request $request)
+    public function subAgentSaleCommission(Request $request)
     {
         $authUser = $request->user();
 
@@ -470,9 +472,10 @@ class SubAgentController extends Controller
             ], 401);
         }
 
-        // Validation (ONLY rate fields)
-        $request->validate([
-            'sub_agent_id' => 'required|exists:users,id',
+        
+
+         $validator = Validator::make($request->all(), [
+             'sub_agent_id' => 'required|exists:users,id',
 
             'super_rate' => 'nullable|numeric|min:0',
             'super_commission_rate' => 'nullable|numeric|min:0',
@@ -498,6 +501,19 @@ class SubAgentController extends Controller
             'box_rate' => 'nullable|numeric|min:0',
             'box_commission_rate' => 'nullable|numeric|min:0',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
+
+
+
 
         $subAgent = User::where('id', $request->sub_agent_id)
             ->where('user_type', 'sub_agent')
@@ -908,7 +924,7 @@ class SubAgentController extends Controller
 
     
 
- public function subAgentNumberCountLimit(Request $request)
+    public function subAgentNumberCountLimit(Request $request)
     {
         $authUser = $request->user();
 
