@@ -12,6 +12,7 @@ use App\Models\UserGame;
 use App\Models\GameCountLimit;
 use App\Models\NumberCountLimit;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 
 class SubAgentController extends Controller
@@ -25,7 +26,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can access this.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[],
             ], 401);
         }
 
@@ -55,7 +56,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[],
             ], 401);
         }
 
@@ -69,7 +70,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found",
                 "errorCode" => 1,
-                "data" => null
+                 "data" => (object)[],
             ], 404);
         }
 
@@ -242,24 +243,31 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can create sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 401);
         }
 
         // Validation
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'username' => 'required|string|max:255|unique:users,username',
             'password' => 'required|string|min:6',
             'confirm_password' => 'required|string|min:6|same:password',
             'daily_credit_limit' => 'nullable|numeric|min:0',
             'weekly_credit_limit' => 'nullable|numeric|min:0',
-
-            // 🎮 Games
             'games' => 'nullable|array',
-            'games.*' => 'integer|exists:games,id',   // ✅ exist check
+            'games.*' => 'integer|exists:games,id',
         ], [
             'confirm_password.same' => 'Confirm password must match password',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
 
         DB::beginTransaction();
 
@@ -311,9 +319,9 @@ class SubAgentController extends Controller
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Failed to create sub-agent",
-                "errorCode" => 1,
+                "errorCode" => 0,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
@@ -327,7 +335,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can edit sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                 "data" => (object)[],
             ], 401);
         }
 
@@ -357,7 +365,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found or access denied.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 404);
         }
 
@@ -433,7 +441,7 @@ class SubAgentController extends Controller
                 "toast_message" => "Failed to update sub-agent",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
@@ -447,7 +455,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can edit sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 401);
         }
 
@@ -490,7 +498,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found or access denied.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 404);
         }
 
@@ -562,7 +570,7 @@ class SubAgentController extends Controller
                 "toast_message" => "Failed to update sale commission",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
@@ -578,7 +586,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can edit sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 401);
         }
 
@@ -629,7 +637,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found or access denied.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 404);
         }
 
@@ -738,7 +746,7 @@ class SubAgentController extends Controller
                 "toast_message" => "Failed to update price commission",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
@@ -755,7 +763,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can manage sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 401);
         }
 
@@ -791,7 +799,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found or access denied.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 404);
         }
 
@@ -853,7 +861,7 @@ class SubAgentController extends Controller
                 "toast_message" => "Failed to update game count limits",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
@@ -871,7 +879,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthorized. Only agents can manage sub-agents.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 401);
         }
 
@@ -897,7 +905,7 @@ class SubAgentController extends Controller
                 "message" => "Error",
                 "toast_message" => "Sub-agent not found or access denied.",
                 "errorCode" => 1,
-                "data" => null
+                "data" => (object)[]
             ], 404);
         }
 
@@ -954,7 +962,7 @@ class SubAgentController extends Controller
                 "toast_message" => "Failed to save number count limits",
                 "errorCode" => 1,
                 "error" => $e->getMessage(),
-                "data" => null
+                "data" => (object)[]
             ], 500);
         }
     }
