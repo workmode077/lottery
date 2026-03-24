@@ -46,186 +46,186 @@ class SubAgentController extends Controller
     }
 
 
-public function viewSingleSubAgent(Request $request, $id)
-{
-    $authUser = $request->user();
+    public function viewSingleSubAgent(Request $request, $id)
+    {
+        $authUser = $request->user();
 
-    if (!$authUser) {
-        return response()->json([
-            "message" => "Error",
-            "toast_message" => "Unauthenticated",
-            "errorCode" => 1,
-            "data" => null
-        ], 401);
-    }
+        if (!$authUser) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthenticated",
+                "errorCode" => 1,
+                "data" => null
+            ], 401);
+        }
 
-    $subAgent = User::where('id', $id)
-        ->where('user_type', 'sub_agent')
-        ->where('status', true)
-        ->first();
+        $subAgent = User::where('id', $id)
+            ->where('user_type', 'sub_agent')
+            ->where('status', true)
+            ->first();
 
-    if (!$subAgent) {
-        return response()->json([
-            "message" => "Error",
-            "toast_message" => "Sub-agent not found",
-            "errorCode" => 1,
-            "data" => null
-        ], 404);
-    }
+        if (!$subAgent) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Sub-agent not found",
+                "errorCode" => 1,
+                "data" => null
+            ], 404);
+        }
 
-    /* ✅ GAME TIMING */
-    $games = Game::where('status', true)->get();
+        /* ✅ GAME TIMING */
+        $games = Game::where('status', true)->get();
 
-    $assignedGameIds = UserGame::where('user_id', $subAgent->id)
-        ->pluck('game_id')
-        ->toArray();
+        $assignedGameIds = UserGame::where('user_id', $subAgent->id)
+            ->pluck('game_id')
+            ->toArray();
 
-    $subAgent->game_timeing = $games->map(function ($game) use ($assignedGameIds) {
-        return [
-            "game_id" => $game->id,
-            "time"    => $game->time,
-            "active"  => in_array($game->id, $assignedGameIds)
-        ];
-    });
-
-    $price = Price::first();
-
-    /* ✅ PRICE COMMISSION */
-    $subAgent->price_commission = [
-        "editable" => true,
-        "lsk_super" => [
-            "first_price" => $price->lsk_super_first_price,
-            "first_price_commission" => $subAgent->lsk_super_first_price_commission,
-            "second_price" => $price->lsk_super_second_price,
-            "second_price_commission" => $subAgent->lsk_super_second_price_commission,
-            "third_price" => $price->lsk_super_third_price,
-            "third_price_commission" => $subAgent->lsk_super_third_price_commission,
-            "fourth_price" => $price->lsk_super_fourth_price,
-            "fourth_price_commission" => $subAgent->lsk_super_fourth_price_commission,
-            "fifth_price" => $price->lsk_super_fifth_price,
-            "fifth_price_commission" => $subAgent->lsk_super_fifth_price_commission,
-            "sixth_price" => $price->lsk_super_sixth_price,
-            "sixth_price_commission" => $subAgent->lsk_super_sixth_price_commission,
-            "lsk_30" => $price->lsk_super_lsk_30,
-            "seventh_price" => $price->lsk_super_seventh_price,
-            "seventh_price_commission" => $subAgent->lsk_super_seventh_price_commission,
-            "lsk_50" => $price->lsk_super_lsk_50,
-        ],
-        "box" => [
-            "three_different_number" => [
-                "first_price" => $price->box_three_diff_first_price,
-                "first_price_commission" => $subAgent->box_three_diff_first_price_commission,
-                "second_price" => $price->box_three_diff_second_price,
-                "second_price_commission" => $subAgent->box_three_diff_second_price_commission,
-            ],
-
-            "two_same_number" => [
-                "first_price" => $price->box_two_same_first_price,
-                "first_price_commission" => $subAgent->box_two_same_first_price_commission,
-                "second_price" => $price->box_two_same_second_price,
-                "second_price_commission" => $subAgent->box_two_same_second_price_commission,
-            ],
-
-            "three_same_number" => [
-                "first_price" => $price->box_three_same_first_price,
-                "first_price_commission" => $subAgent->box_three_same_first_price_commission,
-            ],
-        ],
-
-         "abc" => [
-                "first_price" => $price->abc_first_price,
-                "first_price_commission" => $subAgent->abc_first_price_commission,
-                "second_price" => $price->abc_second_price,
-                "second_price_commission" => $subAgent->abc_second_price_commission,
-        ],
-        "ab_ac_bc" => [
-                "first_price" => $price->ab_ac_bc_first_price,
-                "first_price_commission" => $subAgent->ab_ac_bc_first_price_commission,
-                "second_price" => $price->ab_ac_bc_second_price,
-                "second_price_commission" => $subAgent->ab_ac_bc_second_price_commission,
-        ],
-    ];
-
-    /* ✅ SALES COMMISSION */
-    $subAgent->sales_commission = [
-        "editable" => true,
-        "super_rate" => $subAgent->super_rate,
-        "super_commission_rate" => $subAgent->super_commission_rate,
-        "a_rate"       => $subAgent->a_rate,
-        "a_commission_rate"       => $subAgent->a_commission_rate,
-        "b_rate"       => $subAgent->b_rate,
-        "b_commission_rate"  => $subAgent->b_commission_rate,
-        "c_rate"       => $subAgent->c_rate,
-        "c_commission_rate"       => $subAgent->c_commission_rate,
-        "ab_rate"       => $subAgent->ab_rate,
-        "ab_commission_rate"       => $subAgent->ab_commission_rate,
-        "bc_rate"       => $subAgent->bc_rate,
-        "bc_commission_rate"       => $subAgent->bc_commission_rate,
-        "ac_rate"       => $subAgent->ac_rate,
-        "ac_commission_rate"       => $subAgent->ac_commission_rate,
-        "box_rate"       => $subAgent->box_rate,
-        "box_commission_rate"       => $subAgent->box_commission_rate,
-    ];
-
-    /* ✅ GAME COUNT LIMIT */
-    $subAgent->game_count_limit = [
-        "editable" => $subAgent->game_count_editable,
-        "all_dear" => $subAgent->game_count_all_dear,
-        "all_game" => $subAgent->game_count_all_game,
-        "super"    => $subAgent->game_count_super,
-        "box"      => $subAgent->game_count_box,
-        "a"        => $subAgent->game_count_a,
-        "b"        => $subAgent->game_count_b,
-        "c"        => $subAgent->game_count_c,
-        "ab"       => $subAgent->game_count_ab,
-        "ac"       => $subAgent->game_count_ac,
-        "bc"       => $subAgent->game_count_bc,
-    ];
-
-    /* ✅ NUMBER COUNT LIMIT (NEW PART) */
-    $numberLimits = NumberCountLimit::where('user_id', $subAgent->id)
-        ->get()
-        ->map(function ($row) {
+        $subAgent->game_timeing = $games->map(function ($game) use ($assignedGameIds) {
             return [
-                "game_id" => $row->game_id,
-                "type"    => $row->type,
-                "number"  => $row->number,
-                "count"   => $row->count,
+                "game_id" => $game->id,
+                "time"    => $game->time,
+                "active"  => in_array($game->id, $assignedGameIds)
             ];
         });
 
-    $subAgent->number_count_limit = [
-        "editable" => true,
-        "limits"   => $numberLimits
-    ];
+        $price = Price::first();
 
-    return response()->json([
-    "message" => "Success",
-    "toast_message" => "Sub-agent fetched successfully",
-    "errorCode" => 0,
-    "data" => [
-        "id" => $subAgent->id,
-        "username" => $subAgent->username,
-        "user_type" => $subAgent->user_type,
-        "parent_id" => $subAgent->parent_id,
-        "agent" => $authUser->username,
-        'plain_password' => $subAgent->plain_password,
-        "daily_credit_limit" => $subAgent->daily_credit_limit,
-        "weekly_credit_limit" => $subAgent->weekly_credit_limit,
-        "monthly_credit_limit" => $subAgent->monthly_credit_limit,
-        "yearly_credit_limit" => $subAgent->yearly_credit_limit,
-        "status" => $subAgent->status,
-        "created_at" => $subAgent->created_at,
-        "updated_at" => $subAgent->updated_at,
+        /* ✅ PRICE COMMISSION */
+        $subAgent->price_commission = [
+            "editable" => true,
+            "lsk_super" => [
+                "first_price" => $price->lsk_super_first_price,
+                "first_price_commission" => $subAgent->lsk_super_first_price_commission,
+                "second_price" => $price->lsk_super_second_price,
+                "second_price_commission" => $subAgent->lsk_super_second_price_commission,
+                "third_price" => $price->lsk_super_third_price,
+                "third_price_commission" => $subAgent->lsk_super_third_price_commission,
+                "fourth_price" => $price->lsk_super_fourth_price,
+                "fourth_price_commission" => $subAgent->lsk_super_fourth_price_commission,
+                "fifth_price" => $price->lsk_super_fifth_price,
+                "fifth_price_commission" => $subAgent->lsk_super_fifth_price_commission,
+                "sixth_price" => $price->lsk_super_sixth_price,
+                "sixth_price_commission" => $subAgent->lsk_super_sixth_price_commission,
+                "lsk_30" => $price->lsk_super_lsk_30,
+                "seventh_price" => $price->lsk_super_seventh_price,
+                "seventh_price_commission" => $subAgent->lsk_super_seventh_price_commission,
+                "lsk_50" => $price->lsk_super_lsk_50,
+            ],
+            "box" => [
+                "three_different_number" => [
+                    "first_price" => $price->box_three_diff_first_price,
+                    "first_price_commission" => $subAgent->box_three_diff_first_price_commission,
+                    "second_price" => $price->box_three_diff_second_price,
+                    "second_price_commission" => $subAgent->box_three_diff_second_price_commission,
+                ],
 
-        "game_timeing" => $subAgent->game_timeing,
-        "price_commission" => $subAgent->price_commission,
-        "sales_commission" => $subAgent->sales_commission,
-        "game_count_limit" => $subAgent->game_count_limit,
-        "number_count_limit" => $subAgent->number_count_limit,
-    ]
-], 200);
-}
+                "two_same_number" => [
+                    "first_price" => $price->box_two_same_first_price,
+                    "first_price_commission" => $subAgent->box_two_same_first_price_commission,
+                    "second_price" => $price->box_two_same_second_price,
+                    "second_price_commission" => $subAgent->box_two_same_second_price_commission,
+                ],
+
+                "three_same_number" => [
+                    "first_price" => $price->box_three_same_first_price,
+                    "first_price_commission" => $subAgent->box_three_same_first_price_commission,
+                ],
+            ],
+
+            "abc" => [
+                    "first_price" => $price->abc_first_price,
+                    "first_price_commission" => $subAgent->abc_first_price_commission,
+                    "second_price" => $price->abc_second_price,
+                    "second_price_commission" => $subAgent->abc_second_price_commission,
+            ],
+            "ab_ac_bc" => [
+                    "first_price" => $price->ab_ac_bc_first_price,
+                    "first_price_commission" => $subAgent->ab_ac_bc_first_price_commission,
+                    "second_price" => $price->ab_ac_bc_second_price,
+                    "second_price_commission" => $subAgent->ab_ac_bc_second_price_commission,
+            ],
+        ];
+
+        /* ✅ SALES COMMISSION */
+        $subAgent->sales_commission = [
+            "editable" => true,
+            "super_rate" => $subAgent->super_rate,
+            "super_commission_rate" => $subAgent->super_commission_rate,
+            "a_rate"       => $subAgent->a_rate,
+            "a_commission_rate"       => $subAgent->a_commission_rate,
+            "b_rate"       => $subAgent->b_rate,
+            "b_commission_rate"  => $subAgent->b_commission_rate,
+            "c_rate"       => $subAgent->c_rate,
+            "c_commission_rate"       => $subAgent->c_commission_rate,
+            "ab_rate"       => $subAgent->ab_rate,
+            "ab_commission_rate"       => $subAgent->ab_commission_rate,
+            "bc_rate"       => $subAgent->bc_rate,
+            "bc_commission_rate"       => $subAgent->bc_commission_rate,
+            "ac_rate"       => $subAgent->ac_rate,
+            "ac_commission_rate"       => $subAgent->ac_commission_rate,
+            "box_rate"       => $subAgent->box_rate,
+            "box_commission_rate"       => $subAgent->box_commission_rate,
+        ];
+
+        /* ✅ GAME COUNT LIMIT */
+        $subAgent->game_count_limit = [
+            "editable" => $subAgent->game_count_editable,
+            "all_dear" => $subAgent->game_count_all_dear,
+            "all_game" => $subAgent->game_count_all_game,
+            "super"    => $subAgent->game_count_super,
+            "box"      => $subAgent->game_count_box,
+            "a"        => $subAgent->game_count_a,
+            "b"        => $subAgent->game_count_b,
+            "c"        => $subAgent->game_count_c,
+            "ab"       => $subAgent->game_count_ab,
+            "ac"       => $subAgent->game_count_ac,
+            "bc"       => $subAgent->game_count_bc,
+        ];
+
+        /* ✅ NUMBER COUNT LIMIT (NEW PART) */
+        $numberLimits = NumberCountLimit::where('user_id', $subAgent->id)
+            ->get()
+            ->map(function ($row) {
+                return [
+                    "game_id" => $row->game_id,
+                    "type"    => $row->type,
+                    "number"  => $row->number,
+                    "count"   => $row->count,
+                ];
+            });
+
+        $subAgent->number_count_limit = [
+            "editable" => true,
+            "limits"   => $numberLimits
+        ];
+
+        return response()->json([
+        "message" => "Success",
+        "toast_message" => "Sub-agent fetched successfully",
+        "errorCode" => 0,
+        "data" => [
+            "id" => $subAgent->id,
+            "username" => $subAgent->username,
+            "user_type" => $subAgent->user_type,
+            "parent_id" => $subAgent->parent_id,
+            "agent" => $authUser->username,
+            'plain_password' => $subAgent->plain_password,
+            "daily_credit_limit" => $subAgent->daily_credit_limit,
+            "weekly_credit_limit" => $subAgent->weekly_credit_limit,
+            "monthly_credit_limit" => $subAgent->monthly_credit_limit,
+            "yearly_credit_limit" => $subAgent->yearly_credit_limit,
+            "status" => $subAgent->status,
+            "created_at" => $subAgent->created_at,
+            "updated_at" => $subAgent->updated_at,
+
+            "game_timeing" => $subAgent->game_timeing,
+            "price_commission" => $subAgent->price_commission,
+            "sales_commission" => $subAgent->sales_commission,
+            "game_count_limit" => $subAgent->game_count_limit,
+            "number_count_limit" => $subAgent->number_count_limit,
+        ]
+    ], 200);
+    }
 
 
 

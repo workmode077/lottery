@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Bill;
 use App\Models\Game;
+use App\Models\NumberCountLimit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
@@ -158,7 +159,7 @@ class BillController extends Controller
                 return response()->json([
                     "message" => "Error",
                     "toast_message" => "Passed user is not your sub-agent of this agent",
-                    "errorCode" => 1,
+                    "errorCode" => 0,
                     "data" => null
                 ], 200);
             }
@@ -243,6 +244,54 @@ class BillController extends Controller
                 "errorCode" => 0,
                  "data" => (object)[],
             ], 200);
+        }
+
+        // ✅ Number count limit check (per game_id, per type, per number, today only)
+        $numberLimits = NumberCountLimit::where('user_id', $user->id)
+            ->where('game_id', $request->game_id)
+            ->whereNull('deleted_at')
+            ->get()
+            ->keyBy(fn($row) => strtoupper($row->type) . '_' . $row->number);
+
+        if ($numberLimits->isNotEmpty()) {
+
+            // Get today's used counts per type+number for this game_id
+            $usedNumberCounts = DB::table('bill_items')
+                ->join('bills', 'bills.id', '=', 'bill_items.bill_id')
+                ->where('bills.user_id', $user->id)
+                ->where('bills.game_id', $request->game_id)
+                ->whereDate('bills.created_at', Carbon::today('Asia/Kolkata'))
+                ->whereNull('bills.deleted_at')
+                ->whereNull('bill_items.deleted_at')
+                ->groupBy('bill_items.type', 'bill_items.number')
+                ->select('bill_items.type', 'bill_items.number', DB::raw('SUM(bill_items.count) as total'))
+                ->get()
+                ->keyBy(fn($row) => $row->type . '_' . $row->number)
+                ->toArray();
+
+            $numberLimitErrors = [];
+            foreach ($request->items as $item) {
+                $key = strtoupper($item['game']) . '_' . $item['number'];
+                if (!isset($numberLimits[$key])) continue;
+
+                $limit    = (int) $numberLimits[$key]->count;
+                $existing = (int) ($usedNumberCounts[$key]->total ?? 0);
+                $total    = $existing + $item['count'];
+
+                if ($total > $limit) {
+                    $remaining = max(0, $limit - $existing);
+                    $numberLimitErrors[] = "{$item['game']}#{$item['number']}(limit:{$limit},used:{$existing},left:{$remaining})";
+                }
+            }
+
+            if (!empty($numberLimitErrors)) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Number limit exceeded: " . implode(', ', $numberLimitErrors),
+                    "errorCode" => 0,
+                    "data" => (object)[],
+                ], 200);
+            }
         }
 
         DB::beginTransaction();
@@ -650,8 +699,8 @@ class BillController extends Controller
         }
     }
 
-    /* ============ GAME COUNT LIMIT STATUS  ============= */
-    public function gameCountLimitStatus(Request $request)
+    /* ============ COUNT LIMIT STATUS  ============= */
+    public function countLimitStatus(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
@@ -716,24 +765,62 @@ class BillController extends Controller
             ->pluck('total', 'type')
             ->toArray();
 
-        $result = [];
+        // Build game_count_limit
+        $gameCountLimit = [];
         foreach ($countLimitMap as $key => $field) {
             $total_limit = (int) $user->$field;
             $used_limit  = (int) ($usedCounts[strtoupper($key)] ?? 0);
             $left_limit  = max(0, $total_limit - $used_limit);
 
-            $result[$key] = [
+            $gameCountLimit[strtoupper($key)] = [
                 'total_limit' => $total_limit,
                 'used_limit'  => $used_limit,
                 'left_limit'  => $left_limit,
             ];
         }
 
+        // Get today's used counts per type+number for this game_id
+        $usedNumberCounts = DB::table('bill_items')
+            ->join('bills', 'bills.id', '=', 'bill_items.bill_id')
+            ->where('bills.user_id', $user->id)
+            ->where('bills.game_id', $request->game_id)
+            ->whereDate('bills.created_at', Carbon::today('Asia/Kolkata'))
+            ->whereNull('bills.deleted_at')
+            ->whereNull('bill_items.deleted_at')
+            ->groupBy('bill_items.type', 'bill_items.number')
+            ->select('bill_items.type', 'bill_items.number', DB::raw('SUM(bill_items.count) as total'))
+            ->get()
+            ->keyBy(fn($row) => $row->type . '_' . $row->number);
+
+        // Build number_count_limit
+        $numberCountLimit = NumberCountLimit::where('user_id', $user->id)
+            ->where('game_id', $request->game_id)
+            ->whereNull('deleted_at')
+            ->get()
+            ->map(function ($row) use ($usedNumberCounts) {
+                $key        = strtoupper($row->type) . '_' . $row->number;
+                $total_limit = (int) $row->count;
+                $used_limit  = (int) ($usedNumberCounts[$key]->total ?? 0);
+                $left_limit  = max(0, $total_limit - $used_limit);
+
+                return [
+                    'type'        => strtoupper($row->type),
+                    'number'      => $row->number,
+                    'total_limit' => $total_limit,
+                    'used_limit'  => $used_limit,
+                    'left_limit'  => $left_limit,
+                ];
+            })
+            ->values();
+
         return response()->json([
             "message" => "Success",
-            "toast_message" => "Game count limits fetched successfully",
+            "toast_message" => "Limit status fetched successfully",
             "errorCode" => 0,
-            "data" => $result
+            "data" => [
+                "game_count_limit"   => $gameCountLimit,
+                "number_count_limit" => $numberCountLimit,
+            ]
         ], 200);
     }
 
