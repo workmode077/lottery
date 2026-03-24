@@ -60,7 +60,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -75,7 +75,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -86,7 +86,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -134,7 +134,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -172,7 +172,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 0,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -183,7 +183,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -198,7 +198,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => $gameTimeCheck['message'],
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -411,7 +411,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Failed to create bill",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 500);
         }
     }
@@ -427,7 +427,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -438,7 +438,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -466,7 +466,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
          if ($authUser->user_type === 'agent') {
@@ -480,7 +480,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Passed user is not your sub-agent of this agent",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -491,7 +491,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
 
@@ -506,7 +506,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -519,7 +519,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bills from previous dates cannot be updated, only viewed",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -551,7 +551,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => $gameTimeCheck['message'],
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -658,7 +658,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Failed to update bill",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 500);
         }
     }
@@ -673,7 +673,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -687,7 +687,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bill not found or not created today",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -706,7 +706,7 @@ class BillController extends Controller
                 "message" => "Success",
                 "toast_message" => "Bill deleted successfully",
                 "errorCode" => 0,
-                "data" => null
+               "data" => (object)[],
             ], 200);
 
         } catch (\Exception $e) {
@@ -717,7 +717,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Failed to delete bill",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 500);
         }
     }
@@ -736,7 +736,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -749,7 +749,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Passed user is not your sub-agent",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
         } else {
@@ -758,7 +758,7 @@ class BillController extends Controller
                     "message" => "Error",
                     "toast_message" => "Unauthenticated",
                     "errorCode" => 1,
-                    "data" => null
+                   "data" => (object)[],
                 ], 200);
             }
             $user = $authUser;
@@ -859,7 +859,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -884,7 +884,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Failed to generate PDF: " . $e->getMessage(),
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 500);
         }
     }
@@ -901,7 +901,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Bill not found",
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 200);
         }
 
@@ -923,7 +923,7 @@ class BillController extends Controller
                 "message" => "Error",
                 "toast_message" => "Failed to generate PDF: " . $e->getMessage(),
                 "errorCode" => 1,
-                "data" => null
+               "data" => (object)[],
             ], 500);
         }
     }
