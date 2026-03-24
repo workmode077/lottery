@@ -703,7 +703,7 @@ class ReportController extends Controller
                 ];
             }
 
-            $userMap[$userId]['total_sale'] += (float) $bill->total_rate;
+            $userMap[$userId]['total_sale'] += (float) ($bill->total_rate + $bill->total_commission);
 
             $billDate    = date('Y-m-d', strtotime($bill->created_at));
             $key         = $bill->game_id . '_' . $billDate;
