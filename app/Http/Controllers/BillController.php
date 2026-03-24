@@ -189,7 +189,61 @@ class BillController extends Controller
             ], 200);
         }
 
-       
+        // ✅ Game count limit check (per game_id, per day)
+        $countLimitMap = [
+            'SUPER' => 'game_count_super',
+            'BOX'   => 'game_count_box',
+            'A'     => 'game_count_a',
+            'B'     => 'game_count_b',
+            'C'     => 'game_count_c',
+            'AB'    => 'game_count_ab',
+            'AC'    => 'game_count_ac',
+            'BC'    => 'game_count_bc',
+        ];
+
+        // Group requested counts by type
+        $requestedCounts = [];
+        foreach ($request->items as $item) {
+            $type = $item['game'];
+            $requestedCounts[$type] = ($requestedCounts[$type] ?? 0) + $item['count'];
+        }
+
+        // Get existing counts for today's game_id per type (excluding soft-deleted)
+        $existingCounts = DB::table('bill_items')
+            ->join('bills', 'bills.id', '=', 'bill_items.bill_id')
+            ->where('bills.user_id', $user->id)
+            ->where('bills.game_id', $request->game_id)
+            ->whereDate('bills.created_at', Carbon::today('Asia/Kolkata'))
+            ->whereNull('bills.deleted_at')
+            ->whereNull('bill_items.deleted_at')
+            ->groupBy('bill_items.type')
+            ->select('bill_items.type', DB::raw('SUM(bill_items.count) as total'))
+            ->pluck('total', 'type')
+            ->toArray();
+
+        $limitErrors = [];
+        foreach ($requestedCounts as $type => $newCount) {
+            if (!isset($countLimitMap[$type])) continue;
+
+            $limitField = $countLimitMap[$type];
+            $limit      = (int) $user->$limitField;
+            $existing   = (int) ($existingCounts[$type] ?? 0);
+            $total      = $existing + $newCount;
+
+            if ($total > $limit) {
+                $remaining = max(0, $limit - $existing);
+                $limitErrors[] = "{$type}(limit:{$limit},used:{$existing},left:{$remaining})";
+            }
+        }
+
+        if (!empty($limitErrors)) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Limit exceeded: " . implode(', ', $limitErrors),
+                "errorCode" => 0,
+                 "data" => (object)[],
+            ], 200);
+        }
 
         DB::beginTransaction();
 
@@ -594,6 +648,93 @@ class BillController extends Controller
                 "data" => null
             ], 500);
         }
+    }
+
+    /* ============ GAME COUNT LIMIT STATUS  ============= */
+    public function gameCountLimitStatus(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'game_id' => 'required|exists:games,id',
+        ]);
+
+        $authUser = $request->user();
+        if (!$authUser) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthenticated",
+                "errorCode" => 1,
+                "data" => null
+            ], 200);
+        }
+
+        if ($authUser->user_type === 'agent') {
+            $user = User::where('id', $request->user_id)
+                        ->where('parent_id', $authUser->id)
+                        ->first();
+            if (!$user) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Passed user is not your sub-agent",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 200);
+            }
+        } else {
+            if ($authUser->user_type !== 'sub_agent') {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Unauthenticated",
+                    "errorCode" => 1,
+                    "data" => null
+                ], 200);
+            }
+            $user = $authUser;
+        }
+
+        $countLimitMap = [
+            'super' => 'game_count_super',
+            'box'   => 'game_count_box',
+            'a'     => 'game_count_a',
+            'b'     => 'game_count_b',
+            'c'     => 'game_count_c',
+            'ab'    => 'game_count_ab',
+            'ac'    => 'game_count_ac',
+            'bc'    => 'game_count_bc',
+        ];
+
+        // Get today's used counts per type for this game_id
+        $usedCounts = DB::table('bill_items')
+            ->join('bills', 'bills.id', '=', 'bill_items.bill_id')
+            ->where('bills.user_id', $user->id)
+            ->where('bills.game_id', $request->game_id)
+            ->whereDate('bills.created_at', Carbon::today('Asia/Kolkata'))
+            ->whereNull('bills.deleted_at')
+            ->whereNull('bill_items.deleted_at')
+            ->groupBy('bill_items.type')
+            ->select('bill_items.type', DB::raw('SUM(bill_items.count) as total'))
+            ->pluck('total', 'type')
+            ->toArray();
+
+        $result = [];
+        foreach ($countLimitMap as $key => $field) {
+            $total_limit = (int) $user->$field;
+            $used_limit  = (int) ($usedCounts[strtoupper($key)] ?? 0);
+            $left_limit  = max(0, $total_limit - $used_limit);
+
+            $result[$key] = [
+                'total_limit' => $total_limit,
+                'used_limit'  => $used_limit,
+                'left_limit'  => $left_limit,
+            ];
+        }
+
+        return response()->json([
+            "message" => "Success",
+            "toast_message" => "Game count limits fetched successfully",
+            "errorCode" => 0,
+            "data" => $result
+        ], 200);
     }
 
     /* ============ GENERATE PDF  ============= */

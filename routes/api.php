@@ -57,6 +57,9 @@ Route::middleware('auth:api')->get('/daily-report', [ReportController::class, 'd
 Route::middleware('auth:api')->get('/result', [ResultController::class, 'index']);
 
 
+// Bill - Game count limit status
+Route::middleware('auth:api')->get('/bill/game-count-limit', [BillController::class, 'gameCountLimitStatus']);
+
 // Bill - PDF routes must come BEFORE resource routes
 Route::middleware('auth:api')->get('bill/{id}/pdf/download', [BillController::class, 'generatePDF'])->name('bill.pdf.download');
 Route::middleware('auth:api')->get('bill/{id}/pdf/view', [BillController::class, 'viewPDF'])->name('bill.pdf.view');
