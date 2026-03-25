@@ -14,7 +14,8 @@ use Modules\Admin\Http\Controllers\{
     AgentController,
     SubAgentController,
     ResultEntryController,
-    UserGameController
+    UserGameController,
+    PrizeEntryController
 };
 
 
@@ -63,6 +64,8 @@ Route::prefix(app('backend.prefix'))->group(function () {
         // Route::resource('sub-agent.user-games', UserGameController::class)->except(['show'])->names('sub-agent.user-games');
 
         Route::resource('result-entry', ResultEntryController::class)->except(['show'])->names('result-entry');
+        Route::resource('prize-entry', PrizeEntryController::class)->only(['index'])->names('prize-entry');
+        Route::put('prize-entry/{prizeEntry}', [PrizeEntryController::class, 'update'])->name('prize-entry.update');
        
     });
 });

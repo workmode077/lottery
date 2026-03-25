@@ -3,6 +3,7 @@
 namespace Modules\Admin\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GamePostRequest extends FormRequest
 {
@@ -11,10 +12,13 @@ class GamePostRequest extends FormRequest
      */
     public function rules(): array
     {
+        $id = $this->route('game') ? base64_decode($this->route('game')) : null;
+
         return [
             'time' => [
                 'required',
-                'date_format:H:i', // ensures format like 09:00
+                'date_format:H:i',
+                Rule::unique('games', 'time')->whereNull('deleted_at')->ignore($id),
             ],
         ];
     }
