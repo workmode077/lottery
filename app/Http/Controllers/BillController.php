@@ -144,7 +144,7 @@ class BillController extends Controller
             'customer_name' => 'required|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.game' => 'required|in:SUPER,BOX,A,B,C,AB,AC,BC',
-            'items.*.number' => 'required|integer|min:0',
+            'items.*.number' => 'required|string',
             'items.*.count' => 'required|integer|min:1',
         ]);
 
