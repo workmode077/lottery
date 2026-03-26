@@ -137,9 +137,6 @@ class BillController extends Controller
                "data" => (object)[],
             ], 200);
         }
-
-        
-
         // Validation
         $validator = Validator::make($request->all(), [
             'user_id' => 'required|exists:users,id',
@@ -431,7 +428,7 @@ class BillController extends Controller
             ], 200);
         }
 
-        $bill = Bill::with('items')->find($id);
+        $bill = Bill::with('items', 'game')->find($id);
 
         if (!$bill) {
             return response()->json([
@@ -448,10 +445,10 @@ class BillController extends Controller
             "errorCode" => 0,
             "data" => [
                 "bill" => $bill,
-                "pdf_urls" => [
-                    "download" => url("/api/bill/{$bill->id}/pdf/download"),
-                    "view" => url("/api/bill/{$bill->id}/pdf/view")
-                ]
+                // "pdf_urls" => [
+                //     "download" => url("/api/bill/{$bill->id}/pdf/download"),
+                //     "view" => url("/api/bill/{$bill->id}/pdf/view")
+                // ]
             ]
         ], 200);
     }
