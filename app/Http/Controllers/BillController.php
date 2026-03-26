@@ -444,11 +444,9 @@ class BillController extends Controller
             "toast_message" => "Bill fetched successfully",
             "errorCode" => 0,
             "data" => [
-                "bill" => $bill,
-                // "pdf_urls" => [
-                //     "download" => url("/api/bill/{$bill->id}/pdf/download"),
-                //     "view" => url("/api/bill/{$bill->id}/pdf/view")
-                // ]
+                "bill" => array_merge($bill->toArray(), [
+                    "game_time" => $bill->game?->time,
+                ]),
             ]
         ], 200);
     }
