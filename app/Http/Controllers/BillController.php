@@ -671,35 +671,47 @@ class BillController extends Controller
             ], 200);
         }
 
+        // Find today's bill first
+        $bill = Bill::whereDate('created_at', Carbon::today())
+            ->find($id);
+
+        if (!$bill) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Bill not found or not created today",
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
         /**
-         * Resolve the acting user
+         * Verify ownership based on user type
          */
         if ($authUser->user_type === 'sub_agent') {
 
-            // Sub agent deleting own bill
-            $user = $authUser;
-
-        } elseif ($authUser->user_type === 'agent') {
-
-            // Agent must pass sub agent id
-            if (!$request->filled('user_id')) {
+            // Sub agent can only delete their own bill
+            if ($bill->user_id !== $authUser->id) {
                 return response()->json([
                     "message" => "Error",
-                    "toast_message" => "User ID is required",
+                    "toast_message" => "Unauthorized",
                     "errorCode" => 1,
                     "data" => (object)[],
                 ], 200);
             }
 
-            // Check sub agent belongs to agent
-            $user = User::where('id', $request->user_id)
+            $user = $authUser;
+
+        } elseif ($authUser->user_type === 'agent') {
+
+            // Get user from bill and check they belong to this agent
+            $user = User::where('id', $bill->user_id)
                 ->where('parent_id', $authUser->id)
                 ->first();
 
             if (!$user) {
                 return response()->json([
                     "message" => "Error",
-                    "toast_message" => "Passed user is not your sub-agent",
+                    "toast_message" => "This bill does not belong to your sub-agent",
                     "errorCode" => 1,
                     "data" => (object)[],
                 ], 200);
@@ -710,23 +722,6 @@ class BillController extends Controller
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthorized user type",
-                "errorCode" => 1,
-                "data" => (object)[],
-            ], 200);
-        }
-
-        /**
-         * Find today's bill
-         */
-        $bill = Bill::where('id', $id)
-            ->where('user_id', $user->id)
-            ->whereDate('created_at', Carbon::today())
-            ->first();
-
-        if (!$bill) {
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Bill not found or not created today",
                 "errorCode" => 1,
                 "data" => (object)[],
             ], 200);
