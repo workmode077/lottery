@@ -658,41 +658,113 @@ class BillController extends Controller
         }
     }
 
-    /* ============ DELETE FUNCTION  ============= */
     public function destroy(Request $request, $id)
     {
-        $user = $request->user();
+        $authUser = $request->user();
 
-        if (!$user) {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Unauthenticated",
                 "errorCode" => 1,
-               "data" => (object)[],
+                "data" => (object)[],
             ], 200);
         }
 
-        $bill = Bill::where('id', $id)
-                ->where('user_id', $user->id)
-                ->whereDate('created_at', Carbon::today())
+        /**
+         * Resolve the acting user
+         */
+        if ($authUser->user_type === 'sub_agent') {
+
+            // Sub agent deleting own bill
+            $user = $authUser;
+
+        } elseif ($authUser->user_type === 'agent') {
+
+            // Agent must pass sub agent id
+            if (!$request->filled('user_id')) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "User ID is required",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+
+            // Check sub agent belongs to agent
+            $user = User::where('id', $request->user_id)
+                ->where('parent_id', $authUser->id)
                 ->first();
+
+            if (!$user) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Passed user is not your sub-agent",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+
+        } else {
+
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => "Unauthorized user type",
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
+        }
+
+        /**
+         * Find today's bill
+         */
+        $bill = Bill::where('id', $id)
+            ->where('user_id', $user->id)
+            ->whereDate('created_at', Carbon::today())
+            ->first();
 
         if (!$bill) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Bill not found or not created today",
                 "errorCode" => 1,
-               "data" => (object)[],
+                "data" => (object)[],
             ], 200);
+        }
+
+        // ✅ Game time check — cannot delete if game time has passed or within 5 minutes
+        $game = Game::find($bill->game_id);
+        if ($game) {
+            $now = Carbon::now('Asia/Kolkata');
+            $gameDateTime = Carbon::today('Asia/Kolkata')->setTimeFromTimeString($game->time);
+
+            if ($gameDateTime->isPast()) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Game time has already passed, bill cannot be deleted",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+
+            if ($gameDateTime->lessThan($now->copy()->addMinutes(5))) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Bills can only be deleted at least 5 minutes before game time",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
         }
 
         DB::beginTransaction();
 
         try {
-            // Soft delete bill items
+
+            // Delete items first
             $bill->items()->delete();
 
-            // Soft delete bill
+            // Delete bill
             $bill->delete();
 
             DB::commit();
@@ -701,18 +773,20 @@ class BillController extends Controller
                 "message" => "Success",
                 "toast_message" => "Bill deleted successfully",
                 "errorCode" => 0,
-               "data" => (object)[],
+                "data" => (object)[],
             ], 200);
 
         } catch (\Exception $e) {
+
             DB::rollBack();
+
             Log::error($e);
 
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Failed to delete bill",
                 "errorCode" => 1,
-               "data" => (object)[],
+                "data" => (object)[],
             ], 500);
         }
     }
