@@ -672,10 +672,9 @@ class BillController extends Controller
         }
 
         // Find today's bill first
-        $bill = Bill::whereDate('created_at', Carbon::today())
-            ->find($id);
-
-        if (!$bill) {
+        $bill = Bill::find($id);
+        
+          if (!$bill) {
             return response()->json([
                 "message" => "Error",
                 "toast_message" => "Bill not found or not created today",
@@ -683,6 +682,33 @@ class BillController extends Controller
                 "data" => (object)[],
             ], 200);
         }
+
+        // ✅ Game time check — cannot delete if game time has passed or within 5 minutes
+        $game = Game::find($bill->game_id);
+        if ($game) {
+            $now = Carbon::now('Asia/Kolkata');
+            $gameDateTime = Carbon::today('Asia/Kolkata')->setTimeFromTimeString($game->time);
+
+            if ($gameDateTime->isPast()) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Game time has already passed, bill cannot be deleted",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+
+            if ($gameDateTime->lessThan($now->copy()->addMinutes(5))) {
+                return response()->json([
+                    "message" => "Error",
+                    "toast_message" => "Bills can only be deleted at least 5 minutes before game time",
+                    "errorCode" => 1,
+                    "data" => (object)[],
+                ], 200);
+            }
+        }    
+
+      
 
         /**
          * Verify ownership based on user type
@@ -727,30 +753,7 @@ class BillController extends Controller
             ], 200);
         }
 
-        // ✅ Game time check — cannot delete if game time has passed or within 5 minutes
-        $game = Game::find($bill->game_id);
-        if ($game) {
-            $now = Carbon::now('Asia/Kolkata');
-            $gameDateTime = Carbon::today('Asia/Kolkata')->setTimeFromTimeString($game->time);
-
-            if ($gameDateTime->isPast()) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Game time has already passed, bill cannot be deleted",
-                    "errorCode" => 1,
-                    "data" => (object)[],
-                ], 200);
-            }
-
-            if ($gameDateTime->lessThan($now->copy()->addMinutes(5))) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Bills can only be deleted at least 5 minutes before game time",
-                    "errorCode" => 1,
-                    "data" => (object)[],
-                ], 200);
-            }
-        }
+        
 
         DB::beginTransaction();
 
