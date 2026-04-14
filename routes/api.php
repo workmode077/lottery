@@ -13,6 +13,13 @@ use App\Http\Controllers\Agent\SubAgentController;
 use App\Http\Controllers\SubAgent\SubAgentDashboardController;
 use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 
+use App\Http\Controllers\PrivateAgent\PrizeEntryController;
+use App\Http\Controllers\PrivateAgent\GameCountController;
+use App\Http\Controllers\PrivateAgent\NumberCountController;
+use App\Http\Controllers\PrivateAgent\ResultEntryController;
+use App\Http\Controllers\PrivateAgent\TimeSettingController;
+
+
 
 
 
@@ -66,6 +73,20 @@ Route::middleware('auth:api')->get('bill/{id}/pdf/view', [BillController::class,
 Route::middleware('auth:api')->resource('bill', BillController::class)->except(['show'])->names('bill');
 
 // Route::middleware('auth:api')->get('/', [SubAgentDashboardController::class, 'index']);
+
+
+//Private Agent 
+Route::middleware('auth:api')->get('/prize-entry', [PrizeEntryController::class, 'index']);
+Route::middleware('auth:api')->post('/prize-entry', [PrizeEntryController::class, 'formSubmit']);
+
+Route::middleware('auth:api')->post('/result-entry', [ResultEntryController::class, 'formSubmit']);
+
+Route::middleware('auth:api')->get('/game-count-limit', [GameCountController::class, 'index']);
+Route::middleware('auth:api')->post('/game-count-limit', [GameCountController::class, 'formSubmit']);
+
+Route::middleware('auth:api')->get('/number-count-limit', [NumberCountController::class, 'index']);
+Route::middleware('auth:api')->post('/number-count-limit', [NumberCountController::class, 'formSubmit']);
+
 
 // Fallback route for undefined endpoints
 Route::fallback(function () {

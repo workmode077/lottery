@@ -14,7 +14,7 @@ return new class extends Migration
        Schema::create('users', function (Blueprint $table) {
         $table->id(); 
         $table->string('username');
-        $table->enum('user_type', ['super_agent', 'agent', 'sub_agent']);
+        $table->enum('user_type', ['super_agent', 'agent', 'sub_agent','private_agent']);
         $table->unsignedBigInteger('parent_id')->nullable()->comment('Parent user ID for hierarchy');
         $table->string('password');
         $table->string('plain_password');
