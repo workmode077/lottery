@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Bill;
 use App\Models\BillItem;
 use App\Models\ResultEntry;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
@@ -13,17 +14,44 @@ class ReportController extends Controller
    private function validateReportRequest(Request $request)
     {
         return $request->validate([
-            'from_date'   => 'sometimes|date',
-            'to_date'     => 'sometimes|date|after_or_equal:from_date',
-            'game_id'     => 'sometimes|exists:games,id',
-            'type_key'    => 'sometimes|integer|in:0,1,2,3',
-            'type'        => 'sometimes|string|in:SUPER,BOX,A,B,C,AB,AC,BC',
-            'number'      => 'sometimes|numeric',
-            'sub_dealer'  => 'sometimes|exists:users,id',
-            // 'dealer_rate' => 'sometimes|boolean'
+            'from_date'      => 'sometimes|date',
+            'to_date'        => 'sometimes|date|after_or_equal:from_date',
+            'game_id'        => 'sometimes|exists:games,id',
+            'type_key'       => 'sometimes|integer|in:0,1,2,3',
+            'type'           => 'sometimes|string|in:SUPER,BOX,A,B,C,AB,AC,BC',
+            'number'         => 'sometimes|numeric',
+            'super_agent_id' => 'sometimes|exists:users,id',
+            'agent_id'       => 'sometimes|exists:users,id',
+            'sub_dealer'     => 'sometimes|exists:users,id',
         ]);
     }
 
+
+    // Returns array of sub_agent user ids based on super_agent_id or agent_id param.
+    // Returns null when neither is provided (no hierarchy filter needed).
+    private function getSubAgentIds(Request $request): ?array
+    {
+        if ($request->filled('agent_id')) {
+            return User::where('user_type', 'sub_agent')
+                ->where('parent_id', $request->agent_id)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        if ($request->filled('super_agent_id')) {
+            $agentIds = User::where('user_type', 'agent')
+                ->where('parent_id', $request->super_agent_id)
+                ->pluck('id')
+                ->toArray();
+
+            return User::where('user_type', 'sub_agent')
+                ->whereIn('parent_id', $agentIds)
+                ->pluck('id')
+                ->toArray();
+        }
+
+        return null;
+    }
 
     public function saleReport(Request $request)
     {
@@ -73,9 +101,14 @@ class ReportController extends Controller
             $query->where('game_id', $request->game_id);
         }
 
-        // 🔹 Sub Dealer Filter
+        // 🔹 Sub Dealer / Agent / Super Agent Filter
         if ($request->filled('sub_dealer')) {
             $query->where('user_id', $request->sub_dealer);
+        } else {
+            $subAgentIds = $this->getSubAgentIds($request);
+            if ($subAgentIds !== null) {
+                $query->whereIn('user_id', $subAgentIds);
+            }
         }
 
         // 🔹 Type / Number / Type Key Filter
@@ -208,6 +241,11 @@ class ReportController extends Controller
         }
         if ($request->filled('sub_dealer')) {
             $query->where('user_id', $request->sub_dealer);
+        } else {
+            $subAgentIds = $this->getSubAgentIds($request);
+            if ($subAgentIds !== null) {
+                $query->whereIn('user_id', $subAgentIds);
+            }
         }
         if ($request->filled('type') || $request->filled('number') || $request->filled('type_key')) {
             $query->whereHas('billItems', function ($q) use ($request, $typeKeyMap) {
@@ -548,9 +586,14 @@ class ReportController extends Controller
             $query->where('bills.game_id', $request->game_id);
         }
 
-        // 🔹 Sub Dealer Filter
+        // 🔹 Sub Dealer / Agent / Super Agent Filter
         if ($request->filled('sub_dealer')) {
             $query->where('bills.user_id', $request->sub_dealer);
+        } else {
+            $subAgentIds = $this->getSubAgentIds($request);
+            if ($subAgentIds !== null) {
+                $query->whereIn('bills.user_id', $subAgentIds);
+            }
         }
 
        if ($request->filled('type_key') ||  $request->filled('type') || $request->filled('number') ) {
@@ -670,6 +713,11 @@ class ReportController extends Controller
         }
         if ($request->filled('sub_dealer')) {
             $query->where('user_id', $request->sub_dealer);
+        } else {
+            $subAgentIds = $this->getSubAgentIds($request);
+            if ($subAgentIds !== null) {
+                $query->whereIn('user_id', $subAgentIds);
+            }
         }
         if ($request->filled('type') || $request->filled('number') || $request->filled('type_key')) {
             $query->whereHas('billItems', function ($q) use ($request, $typeKeyMap) {

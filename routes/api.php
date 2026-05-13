@@ -13,6 +13,7 @@ use App\Http\Controllers\Agent\SubAgentController;
 use App\Http\Controllers\SubAgent\SubAgentDashboardController;
 use App\Http\Controllers\SubAgent\SubAgentLimitCheckController;
 
+use App\Http\Controllers\PrivateAgent\UserListController;
 use App\Http\Controllers\PrivateAgent\PrizeEntryController;
 use App\Http\Controllers\PrivateAgent\GameCountController;
 use App\Http\Controllers\PrivateAgent\NumberCountController;
@@ -75,7 +76,11 @@ Route::middleware('auth:api')->resource('bill', BillController::class)->except([
 // Route::middleware('auth:api')->get('/', [SubAgentDashboardController::class, 'index']);
 
 
-//Private Agent 
+//Private Agent
+Route::middleware('auth:api')->get('/super-agent-list', [UserListController::class, 'superAgentList']);
+Route::middleware('auth:api')->get('/agent-list', [UserListController::class, 'agentList']);
+Route::middleware('auth:api')->get('/sub-agent-list-all', [UserListController::class, 'subAgentList']);
+
 Route::middleware('auth:api')->get('/prize-entry', [PrizeEntryController::class, 'index']);
 Route::middleware('auth:api')->post('/prize-entry', [PrizeEntryController::class, 'formSubmit']);
 
