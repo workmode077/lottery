@@ -12,10 +12,10 @@ class UserListController extends Controller
     {
         $authUser = $request->user();
 
-        if (!$authUser || $authUser->user_type !== 'private_agent') {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Unauthorized. Only private_agent can access this.",
+                "toast_message" => "Unauthorized.",
                 "errorCode" => 1,
                 "data" => (object)[],
             ], 401);
@@ -36,10 +36,10 @@ class UserListController extends Controller
     {
         $authUser = $request->user();
 
-        if (!$authUser || $authUser->user_type !== 'private_agent') {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Unauthorized. Only private_agent can access this.",
+                "toast_message" => "Unauthorized.",
                 "errorCode" => 1,
                 "data" => (object)[],
             ], 401);
@@ -66,16 +66,19 @@ class UserListController extends Controller
     {
         $authUser = $request->user();
 
-        if (!$authUser || $authUser->user_type !== 'private_agent') {
+        if (!$authUser) {
             return response()->json([
                 "message" => "Error",
-                "toast_message" => "Unauthorized. Only private_agent can access this.",
+                "toast_message" => "Unauthorized.",
                 "errorCode" => 1,
                 "data" => (object)[],
             ], 401);
         }
 
-        $query = User::where('user_type', 'sub_agent');
+        $query = User::where('user_type', 'sub_agent')
+            ->with(['games' => function ($q) {
+                $q->select('games.id', 'games.time');
+            }]);
 
         // Optional filter by parent agent
         if ($request->filled('agent_id')) {
