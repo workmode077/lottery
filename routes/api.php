@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AgentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\ResultController;
@@ -35,6 +36,13 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/game/{id}', [GameController::class, 'show']);
 });
 
+
+// Agent CRUD
+Route::middleware('auth:api')->get('/agents', [AgentController::class, 'index']);
+Route::middleware('auth:api')->post('/agents', [AgentController::class, 'store']);
+Route::middleware('auth:api')->get('/agents/{id}', [AgentController::class, 'show']);
+Route::middleware('auth:api')->put('/agents/{id}', [AgentController::class, 'update']);
+Route::middleware('auth:api')->delete('/agents/{id}', [AgentController::class, 'destroy']);
 
 // Agent
 Route::middleware('auth:api')->get('/agent-dashboard', [AgentDashboardController::class, 'index']);

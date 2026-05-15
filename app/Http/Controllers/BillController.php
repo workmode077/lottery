@@ -807,29 +807,31 @@ class BillController extends Controller
             ], 200);
         }
 
-        if ($authUser->user_type === 'agent') {
-            $user = User::where('id', $request->user_id)
-                        ->where('parent_id', $authUser->id)
-                        ->first();
-            if (!$user) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Passed user is not your sub-agent",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-        } else {
-            if ($authUser->user_type !== 'sub_agent') {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Unauthenticated",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-            $user = $authUser;
-        }
+        // if ($authUser->user_type === 'agent') {
+        //     $user = User::where('id', $request->user_id)
+        //                 ->where('parent_id', $authUser->id)
+        //                 ->first();
+        //     if (!$user) {
+        //         return response()->json([
+        //             "message" => "Error",
+        //             "toast_message" => "Passed user is not your sub-agent",
+        //             "errorCode" => 1,
+        //            "data" => (object)[],
+        //         ], 200);
+        //     }
+        // } else {
+        //     if ($authUser->user_type !== 'sub_agent') {
+        //         return response()->json([
+        //             "message" => "Error",
+        //             "toast_message" => "Unauthenticated",
+        //             "errorCode" => 1,
+        //            "data" => (object)[],
+        //         ], 200);
+        //     }
+        //     $user = $authUser;
+        // }
+
+        $user = $authUser;
 
         $countLimitMap = [
             'super' => 'game_count_super',
