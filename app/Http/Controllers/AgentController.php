@@ -47,7 +47,6 @@ class AgentController extends Controller
         $perPage = (int) $request->input('per_page', 15);
 
         $query = User::where('user_type', 'agent')
-            ->with(['games' => fn($q) => $q->select('games.id', 'games.time')])
             ->select('id', 'username', 'user_type', 'parent_id', 'status', 'created_at');
 
         $this->scopeByAuth($query, $authUser);
@@ -64,7 +63,22 @@ class AgentController extends Controller
 
         $agents = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return $this->paginatedResponse($agents, 'Agent list fetched successfully');
+        return response()->json([
+            "message"       => "Success",
+            "toast_message" => "Agent list fetched successfully",
+            "errorCode"     => 0,
+            "data"          => [
+                "pagination" => [
+                    "total"        => $agents->total(),
+                    "per_page"     => $agents->perPage(),
+                    "current_page" => $agents->currentPage(),
+                    "last_page"    => $agents->lastPage(),
+                    "from"         => $agents->firstItem(),
+                    "to"           => $agents->lastItem(),
+                ],
+                "data" => $agents->items(),
+            ]
+        ], 200);
     }
 
     public function show(Request $request, $id)

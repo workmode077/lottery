@@ -50,10 +50,6 @@ class BillController extends Controller
     /* ============ DATATABEL ============= */
     public function index(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-        ]);
-
         $authUser = $request->user();
         if (!$authUser) {
             return response()->json([
@@ -64,58 +60,42 @@ class BillController extends Controller
             ], 200);
         }
 
-        if ($authUser->user_type === 'agent') {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+        ]);
 
-            $user = User::where('id', $request->user_id)
-                        ->where('parent_id', $authUser->id)
-                        ->first();
-
-            if (!$user) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Passed user is not your sub-agent of this agent",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-        } else {
-
-            if ($authUser->user_type !== 'sub_agent') {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Unauthenticated",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-            $user = $authUser;
+        if ($validator->fails()) {
+            return response()->json([
+                "message" => "Error",
+                "toast_message" => $validator->errors()->first(),
+                "errorCode" => 1,
+                "data" => (object)[],
+            ], 200);
         }
 
+        $user = User::find($request->user_id);
 
-
-
+        $perPage = (int) $request->input('per_page', 15);
 
         $bills = Bill::where('user_id', $user->id)
                     ->with('items', 'game')
                     ->latest()
-                    ->get();
-
-        // Add PDF URLs to each bill
-        $bills->transform(function ($bill) {
-            $bill->pdf_urls = [
-                "download" => url("/api/bill/{$bill->id}/pdf/download"),
-            ];
-            return $bill;
-        });
+                    ->paginate($perPage);
 
         return response()->json([
             "message" => "Success",
             "toast_message" => "data fetched successfully",
             "errorCode" => 0,
             "data" => [
-                "bills" => $bills
+                "pagination" => [
+                    "total"        => $bills->total(),
+                    "per_page"     => $bills->perPage(),
+                    "current_page" => $bills->currentPage(),
+                    "last_page"    => $bills->lastPage(),
+                    "from"         => $bills->firstItem(),
+                    "to"           => $bills->lastItem(),
+                ],
+                "bills" => $bills->items(),
             ]
         ], 200);
     }
@@ -157,38 +137,9 @@ class BillController extends Controller
             ], 200);
         }
 
+         $user = User::where('id', $request->user_id)->first();
 
-         if ($authUser->user_type === 'agent') {
-
-            $user = User::where('id', $request->user_id)
-                        ->where('parent_id', $authUser->id)
-                        ->first();
-
-            if (!$user) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Passed user is not your sub-agent of this agent",
-                    "errorCode" => 0,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-        } else {
-
-            if ($authUser->user_type !== 'sub_agent') {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Unauthenticated",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-            $user = $authUser;
-        }
-
-
-        // ✅ Game time check
+       // ✅ Game time check
         $gameTimeCheck = $this->isGameTimeValid($request->game_id);
         if (!$gameTimeCheck['valid']) {
             return response()->json([
@@ -392,10 +343,6 @@ class BillController extends Controller
                 "errorCode" => 0,
                 "data" => [
                     "bill" => $bill->load('items'),
-                    "pdf_urls" => [
-                        "download" => url("/api/bill/{$bill->id}/pdf/download"),
-                        "view" => url("/api/bill/{$bill->id}/pdf/view"),
-                    ]
                 ]
             ], 200);
 
@@ -464,37 +411,8 @@ class BillController extends Controller
                "data" => (object)[],
             ], 200);
         }
-         if ($authUser->user_type === 'agent') {
 
-            $user = User::where('id', $request->user_id)
-                        ->where('parent_id', $authUser->id)
-                        ->first();
-
-            if (!$user) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Passed user is not your sub-agent of this agent",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-        } else {
-
-            if ($authUser->user_type !== 'sub_agent') {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Unauthenticated",
-                    "errorCode" => 1,
-                   "data" => (object)[],
-                ], 200);
-            }
-
-            $user = $authUser;
-        }
-
-
-        $bill = Bill::where('user_id',$user->id)->where('id',$id)->first();
+        $bill = Bill::where('id',$id)->first();
 
         if (!$bill) {
             return response()->json([
@@ -708,54 +626,7 @@ class BillController extends Controller
             }
         }    
 
-      
-
-        /**
-         * Verify ownership based on user type
-         */
-        if ($authUser->user_type === 'sub_agent') {
-
-            // Sub agent can only delete their own bill
-            if ($bill->user_id !== $authUser->id) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "Unauthorized",
-                    "errorCode" => 1,
-                    "data" => (object)[],
-                ], 200);
-            }
-
-            $user = $authUser;
-
-        } elseif ($authUser->user_type === 'agent') {
-
-            // Get user from bill and check they belong to this agent
-            $user = User::where('id', $bill->user_id)
-                ->where('parent_id', $authUser->id)
-                ->first();
-
-            if (!$user) {
-                return response()->json([
-                    "message" => "Error",
-                    "toast_message" => "This bill does not belong to your sub-agent",
-                    "errorCode" => 1,
-                    "data" => (object)[],
-                ], 200);
-            }
-
-        } else {
-
-            return response()->json([
-                "message" => "Error",
-                "toast_message" => "Unauthorized user type",
-                "errorCode" => 1,
-                "data" => (object)[],
-            ], 200);
-        }
-
-        
-
-        DB::beginTransaction();
+      DB::beginTransaction();
 
         try {
 
@@ -807,29 +678,7 @@ class BillController extends Controller
             ], 200);
         }
 
-        // if ($authUser->user_type === 'agent') {
-        //     $user = User::where('id', $request->user_id)
-        //                 ->where('parent_id', $authUser->id)
-        //                 ->first();
-        //     if (!$user) {
-        //         return response()->json([
-        //             "message" => "Error",
-        //             "toast_message" => "Passed user is not your sub-agent",
-        //             "errorCode" => 1,
-        //            "data" => (object)[],
-        //         ], 200);
-        //     }
-        // } else {
-        //     if ($authUser->user_type !== 'sub_agent') {
-        //         return response()->json([
-        //             "message" => "Error",
-        //             "toast_message" => "Unauthenticated",
-        //             "errorCode" => 1,
-        //            "data" => (object)[],
-        //         ], 200);
-        //     }
-        //     $user = $authUser;
-        // }
+  
 
         $user = $authUser;
 
